@@ -1,0 +1,41 @@
+<html>
+    <head>
+            <meta charset="UTF-8">
+        <link rel="stylesheet" href="../../lib/w3.css">
+        <script src="../../lib/jquery.js"></script>
+        <script src="../../lib/vue.js"></script>
+        <script src="../../js/base.js"></script>
+    </head>
+    <body>
+        <div id="app">
+            <table class="w3-table-all w3-hoverable">
+                <thead>
+                <tr class="w3-light-blue">
+                    <th>Id</th>
+                    <td>Prefix</td>
+                    <td>Name</td>
+                    <th>MasterLabel</th>
+                    <td>Description</td>
+                    <td>ModifiedName</td>
+                    <td>ModifiedDate</td>
+                    <td></td>
+                </tr>
+                </thead>
+                <tr  v-for="obj in appData.objects">
+                    <td>{{obj.Id}}</td>
+                    <td>{{obj.NamespacePrefix}}</td>
+                    <td>{{obj.Name}}</td>
+                    <td>{{obj.MasterLabel}}</td>
+                    <td>{{obj.Description}}</td>
+                    <td>{{obj.LastModifiedBy.Name}}</td>
+                    <td>{{obj.ModifiedDate}}</td>
+                    <td style="padding:0;">
+                        <a class="w3-button w3-white w3-border w3-border-blue w3-round-large" 
+                            v-bind:href="appData.loginInfo.domain + obj.Id" target="_blank">Ref</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <script src="main.js"></script>
+    </body>
+</html>

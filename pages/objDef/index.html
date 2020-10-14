@@ -1,0 +1,128 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>オブジェクト定義</title>
+    <link rel="stylesheet" href="../../lib/w3.css">
+    <link rel="stylesheet" href="../cmpLib/objFieldList.css">
+    <link rel="stylesheet" href="../cmpLib/objData.css">
+    <script src="../../lib/jquerysrc.js"></script>
+    <script src="../../lib/vue.js"></script>
+    <script src="../../js/base.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+    <link rel="stylesheet" href="../../lib/handsontable.full.min.css">
+    <script src="../../lib/handsontable.full.min.js"></script>
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            /* font-family: "游ゴシック","メイリオ"; */
+        }
+
+        .objProp .w3-row {
+            border: 1px solid #eee;
+            padding: 10px;
+        }
+
+        .cursorPointer{
+            cursor: pointer;
+        }
+
+        .selectedTab{
+            border-color: #f44336!important;
+        }
+
+        .hidden{
+            display:none;
+        }
+        .tabDiv{
+            height:calc(100% - 45px);
+            overflow:auto;
+            clear:both;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div class="w3-row" style="height:60px;">
+            <div class="w3-rest">
+                <div style="padding:8px;padding-top:0;">
+                    <div class="w3-card" style="height:100%;vertical-align: middle;position:relative;">
+                        <div style="font-size: 1.5em;padding-left:15px; padding-top:10px;">{{appData.object.label}}({{appData.object.name}})
+                        </div>
+                        <div class="w3-display-right" style="padding-right:15px;">
+                            <obj-ref-btn :object="appData.object">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="w3-row" style="height:calc(100vh - 80px);">
+            <div class="w3-col" style="width:400px;">
+                <div style="padding:8px;">
+                    <div class="w3-card objProp" style="height:100%;">
+                        <div class="w3-row">
+                            <div class="w3-col s3">タイプ:</div>
+                            <div class="w3-col s6">{{appData.object.custom == true ? "カスタムオブジェクト" : "標準オブジェクト"}}</div>
+                        </div>
+                        <div class="w3-row">
+                            <div class="w3-col s3">ラベル:</div>
+                            <div class="w3-col s6">{{appData.object.label}}</div>
+                        </div>
+                        <div class="w3-row">
+                            <div class="w3-col s3">API名:</div>
+                            <div class="w3-col s6">{{appData.object.name}}</div>
+                        </div>
+                        <div class="w3-row" v-if="appData.object.fields">
+                            <div class="w3-col s3">項目数:</div>
+                            <div class="w3-col s6">{{appData.object.fields.length}}</div>
+                        </div>
+                        <div class="w3-row" v-if="appData.dataCount != null">
+                            <div class="w3-col s3">データ件数:</div>
+                            <div class="w3-col s6">{{appData.dataCount}}件</div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="w3-rest">
+                <div style="padding:8px;padding-left:0;">
+                    <div class="w3-card" style="height:100%;overflow:auto;border:1px solid #f1f1f1;overflow:hidden;">
+
+                        <div class="w3-row" style="height:45px;">
+                            <div tabKey="itemTab" style="width:120px;" class="w3-col tablink w3-bottombar w3-hover-light-grey w3-padding cursorPointer" 
+                                v-bind:class="{selectedTab:appData.selectedTab=='itemTab'}" v-on:click="tabClick(event)">項目情報</div>
+                            <div tabKey="dataTab" style="width:120px;" class="w3-col tablink w3-bottombar w3-hover-light-grey w3-padding cursorPointer" 
+                                v-bind:class="{selectedTab:appData.selectedTab=='dataTab'}" v-on:click="tabClick(event)">データ</div>
+                            <div tabKey="relationTab" style="width:120px;" class="w3-col tablink w3-bottombar w3-hover-light-grey w3-padding cursorPointer" 
+                                v-bind:class="{selectedTab:appData.selectedTab=='relationTab'}" v-on:click="tabClick(event)">関係図</div>
+                            <!-- <div tabKey="layoutTab" style="width:120px;" class="w3-col tablink w3-bottombar w3-hover-light-grey w3-padding cursorPointer" v-on:click="tabClick(event)">レイアウト</div> -->
+                            <div class="w3-rest tablink w3-bottombar w3-padding">&nbsp;</div>
+                        </div>
+
+                        <div id="itemTab" ref="itemTab" v-bind:class="{hidden:appData.selectedTab!='itemTab'}" class="tabDiv">
+                            <obj-field-list v-if="appData.cmpCreateFlg.itemTab" v-bind:object="appData.object" />
+                        </div>
+                        <div id="dataTab" ref="dataTab" v-bind:class="{hidden:appData.selectedTab!='dataTab'}" class="tabDiv">
+                            <obj-datas v-if="appData.cmpCreateFlg.dataTab" v-bind:object="appData.object" />
+                        </div>
+                        <div id="relationTab" ref="relationTab" v-bind:class="{hidden:appData.selectedTab!='relationTab'}" class="tabDiv">
+                            <obj-ref-map v-if="appData.cmpCreateFlg.relationTab" v-bind:object="appData.object" />
+                        </div>
+                        <div id="layoutTab" ref="layoutTab" v-bind:class="{hidden:appData.selectedTab!='layoutTab'}" class="tabDiv">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="../cmpLib/objFieldList.js"></script>
+    <script src="../cmpLib/objRefBtn.js"></script>
+    <script src="../cmpLib/objData.js"></script>
+    <script src="../cmpLib/objRefMap.js"></script>
+    <script src="main.js"></script>
+</body>
+
+</html>

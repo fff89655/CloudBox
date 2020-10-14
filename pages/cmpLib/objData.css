@@ -1,0 +1,11 @@
+
+.pageLink{
+    padding:2px;
+    font-size:1.2em;
+}
+.currentPage{
+    background-color:lightgray;
+}
+.dataChangedCell{
+    background-color: yellow !important;
+}

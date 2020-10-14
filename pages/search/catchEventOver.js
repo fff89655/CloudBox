@@ -1,0 +1,2 @@
+
+EventTarget.prototype.addEventListener = f;

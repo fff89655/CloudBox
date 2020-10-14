@@ -1,0 +1,16 @@
+.hightLight{
+    background-color:yellow;
+}
+.objectColTitle{
+    background-color:#0074D9;
+    color:white;
+}
+.fieldColTitle{
+    background-color:#7FDBFF;
+    color:black;
+}
+.searchResult .w3-col{
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow:hidden;
+}

@@ -1,0 +1,45 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../lib/w3.css">
+    <script src="../../lib/jquery.js"></script>
+    <script src="../../lib/vue.js"></script>
+    <script src="../../js/base.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <style>
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <table>
+            <tr v-for="ref in appData.indexList">
+                <td>{{ref.index}}</td>
+                <td>{{ref.label}}</td>
+                <td>{{ref.key}}</td>
+            </tr>
+        </table>asdsad
+        <table>
+            <tr v-for="ref in appData.distinctRefMapList">
+                <td>{{ref.fromIndex}}</td>
+                <td>{{ref.srcObjectLabel}}</td>
+                <td>{{ref.toObjLabel}}</td>
+                <td>{{ref.toIndex}}</td>
+                <td>{{ref.srcObject}}</td>
+                <td>{{ref.toObj}}</td>
+            </tr>
+        </table>
+        <!-- <div class="w3-row" v-for="ref in appData.refMapList">
+            <div class="w3-col s2">{{ref.srcObjectLabel}}</div>
+            <div class="w3-col s2">{{ref.srcFieldLabel}}</div>
+            <div class="w3-col s2">{{ref.srcObject}}</div>
+            <div class="w3-col s2">{{ref.srcField}}</div>
+            <div class="w3-col s2">{{ref.toObj}}</div>
+            <div class="w3-col s2">{{ref.toObjLabel}}</div>
+        </div> -->
+    </div>
+    <script src="main.js"></script>
+</body>
+
+</html>

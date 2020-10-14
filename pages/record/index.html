@@ -1,0 +1,108 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="../../lib/w3.css">
+        <script src="../../lib/jquery.js"></script>
+        <script src="../../lib/vue.js"></script>
+        <script src="../../js/base.js"></script>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <style>
+            *{
+                font-family: 'Open Sans',Meiryo,'メイリオ',Arial,sans-serif;
+                box-sizing: border-box;
+            }
+            .fieldTd>div{
+                display:inline-block;
+                width:150px;
+                overflow:hidden;
+                border:1px solid black;
+                border-right:0;
+            }
+            .fieldTd>div:last-child {
+                border:1px solid black;
+            }
+            .font-Marina{
+                color:#4F84C4;
+            }
+            .cursor-handle{
+                cursor:pointer;
+            }
+            td{
+                vertical-align: middle;
+            }
+            .pickDiv table{
+                border-collapse: collapse;
+            }
+            .pickDiv td{
+                white-space: nowrap;
+                /* border:1px solid black; */
+                border:none;
+                padding:3px 13px;
+                color:#333;
+                font-family:arial, sans-serif;
+            }
+            .editOver::after{
+                content: url(../../imgs/changed.svg);
+                position: absolute;
+                width:24px;
+                height:24px;
+                color:blue;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app">
+            <div class="w3-margin">
+                
+                Id : <input class="w3-input w3-border w3-cell" style="width:200px;" type="text" v-model:value="appData.idVal">
+                <button class="w3-button w3-white w3-border w3-border-blue w3-cell w3-margin-right" v-on:click="onSearchClick()">search</button>
+
+                <select class="w3-select w3-border w3-cell" style="width:300px" v-model:value="appData.selectObj">
+                    <option v-bind:value="o.name" v-for="o in appData.objMap">{{o.label}}</option>
+                </select>
+                <button class="w3-button w3-white w3-border w3-border-blue w3-cell w3-margin-right" v-on:click="onCreateClick()">Create</button>
+
+                <button class="w3-button w3-white w3-border w3-border-blue w3-cell" v-on:click="onSaveClick()">save</button>
+                <button class="w3-button w3-white w3-border w3-border-blue w3-cell" v-on:click="onCopyClick()">Copy</button>
+                <button class="w3-button w3-white w3-border w3-border-blue w3-cell" v-on:click="onRefClick()">Ref</button>
+            </div>
+            <div class="w3-padding">
+                <div style="color:red;">{{appData.errMsg}}</div>
+                <div>
+                    {{appData.objectName}}
+                </div>
+                <div>
+                    <div v-for="r in appData.reference">
+                        {{r.name}} : 
+                        <a :href="'/pages/record/index.html?id=' + r.value" target="_blank">{{r.value}} </a>
+                         : {{r.refType?r.refType.label:""}} <!--: {{r.json}} -->
+                    </div>
+                </div>
+                <div v-for="c in appData.selectItems" style="float:left;width:50%;border-top:2px dashed lightgray; padding-top:8px;padding-bottom:8px;" >
+                    <div style="float:left;width:50%;padding-left:10px;">
+                        <div>
+                            {{c.label}}
+                            <span v-if="!c.nillable" style="display:inline-block;width:5px;color:red;font-weight: bold">*</span>
+                            
+                            <br /><span style="color:gray;">{{c.name}} #{{c.type}} </span>
+                        </div>
+                    </div>
+                    <div style="float:left;width:50%">
+
+                        <input v-if="c.type == 'boolean'" class="w3-check" type="checkbox" checked="checked" 
+                            v-model:value="appData.recordData[c.name]" 
+                            v-on:change="onValueChange(event, c.name)"
+                            :disabled="!c.updateable">
+                    
+                        <input v-if="c.type != 'boolean'" class="w3-input w3-border w3-cell" style="width:200px;" type="text" 
+                            v-model:value="appData.recordData[c.name]" 
+                            :disabled="!c.updateable"
+                            v-on:change="onValueChange(event, c.name)">
+                    
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="main.js"></script>
+    </body>
+</html>

@@ -1,0 +1,160 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="../../lib/w3.css">
+        <script src="../../lib/jquery.js"></script>
+        <script src="../../lib/vue.js"></script>
+        <script src="../../js/base.js"></script>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <style>
+            .fieldTd>div{
+                display:inline-block;
+                width:150px;
+                overflow:hidden;
+                border:1px solid black;
+                border-right:0;
+            }
+            .fieldTd>div:last-child {
+                border:1px solid black;
+            }
+            .font-Marina{
+                color:#4F84C4;
+            }
+            .cursor-handle{
+                cursor:pointer;
+            }
+            td{
+                vertical-align: middle;
+            }
+            .pickDiv table{
+                border-collapse: collapse;
+            }
+            .pickDiv td{
+                white-space: nowrap;
+                /* border:1px solid black; */
+                border:none;
+                padding:3px 13px;
+                color:#333;
+                font-family:arial, sans-serif;
+            }
+            .w3-button{
+                padding:3px 12px;
+            }
+            .buttonTd{
+                padding-top:4px !important;
+                padding-bottom:3px !important;
+            }
+
+        </style>
+    </head>
+    <body>
+        <div id="app">
+            <table class="w3-table-all w3-hoverable">
+                <thead>
+                <tr class="w3-light-blue">
+                    <th></th>
+                    <th>Name</th>
+                    <th>Label</th>
+                    <th>isCustomObject</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody v-for="obj in appData.objects">
+                    <tr>
+                        <td>
+                            <i class="material-icons w3-large font-Marina" title="Object">featured_video</i>
+                        </td>
+                        <td>
+                            <i class="material-icons w3-large font-Marina cursor-handle" v-on:click="toogleField(true, obj)" v-show="!obj.showField">dehaze</i>
+                            <i class="material-icons w3-large font-Marina cursor-handle" v-on:click="toogleField(false, obj)" v-show="obj.showField">details</i>
+                            {{obj.name}}</td>
+                        <td>{{obj.label}}</td>
+                        <td>{{obj.custom}}</td>
+                        <td style="padding:0;" class="buttonTd">
+                            <a class="w3-button w3-white w3-border w3-border-blue w3-round-large" target="_blank"
+                               v-on:click="onRefClick(obj)">参照</a>
+
+                            <a class="w3-button w3-white w3-border w3-border-blue w3-round-large" 
+                                v-bind:href="'../objDef/index.html?objectName=' + obj.name " target="_blank">明細</a>
+                            
+                            <a class="w3-button w3-white w3-border w3-border-blue w3-round-large" 
+                                v-bind:href="'../objDef/index.html?objectName=' + obj.name + '&initTab=dataTab'" target="_blank">データ</a>
+
+                            <a class="w3-button w3-white w3-border w3-border-blue w3-round-large" 
+                                v-on:click="pickUp(obj)" target="_blank">pick up</a>
+                        </td>
+                    </tr>
+                    <tr v-show="obj.showField">
+                        <td colspan="7">
+                            
+                            <table class="w3-table-all w3-hoverable">
+                                <thead>
+                                <tr class="w3-light-red">
+                                    <th>
+                                        <i class="material-icons w3-large font-Marina" title="Item">featured_play_list</i>
+                                    </th>
+                                    <th>Name</th>
+                                    <th>Label</th>
+                                    <th>Type</th>
+                                    <th>isCustom</th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+                                <tr  v-for="f in obj.fields">
+                                    <td>
+                                        <i class="material-icons w3-large font-Marina" title="Item">featured_play_list</i>
+                                    </td>
+                                    <td>{{f.name}}</td>
+                                    <td>{{f.label}}</td>
+                                    <td>{{f.type}}</td>
+                                    <td>{{f.custom}}</td>
+                                    <td style="padding:0;">
+                                        <a v-if="f.custom" class="w3-button w3-white w3-border w3-border-blue w3-round-large" 
+                                            v-bind:href=" f.customFieldId + '?setupid=CustomObjects'" target="_blank"
+                                            v-on:click="onFieldRefClick(obj, f); return false;">Ref</a>
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div id="pickModel" class="w3-modal">
+                <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="width:90%;">
+
+                    <div class="w3-center"><br>
+                        <span v-on:click="$('#pickModel').hide()" class="w3-button w3-xlarge w3-hover-red w3-display-topright"
+                            title="Close Modal">&times;</span>
+                    </div>
+
+                    <div class="w3-container pickDiv" style="height:600px;overflow:auto;">
+                        <table>
+                            <tr>
+                                <td v-for="k in appData.pickList.keys">
+                                    {{k}}
+                                </td>
+                            </tr>
+                            <tr v-for="n in appData.pickList.indexArr">
+                                <td v-for="k in appData.pickList.keys">
+                                    <div v-if="appData.pickList.values[k][n]">
+                                        <input :id="'chk_' + appData.pickList.values[k][n].name" class="w3-check" type="checkbox">
+                                        <label :for="'chk_' + appData.pickList.values[k][n].name">{{appData.pickList.values[k][n].label}}</label>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="w3-container w3-border-top w3-padding-16 w3-light-grey">
+                        <button  type="button" class="w3-button w3-light-blue w3-right">Ok</button>
+                        <!-- <span class="w3-right w3-padding w3-hide-small">Forgot <a href="#">password?</a></span> -->
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <script src="main.js"></script>
+    </body>
+</html>

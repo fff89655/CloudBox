@@ -1,0 +1,29 @@
+
+.fieldTd>div{
+    display:inline-block;
+    width:150px;
+    overflow:hidden;
+    border:1px solid black;
+    border-right:0;
+}
+.fieldTd>div:last-child {
+    border:1px solid black;
+}
+.font-Marina{
+    color:#4F84C4;
+}
+.cursor-handle{
+    cursor:pointer;
+}
+td{
+    vertical-align: middle;
+}
+
+.w3-table-all th, .w3-table-all td{
+    border:1px solid #E5E5E5;
+    white-space: nowrap;
+}
+
+.w3-dataHeader th{
+    overflow:hidden;
+}

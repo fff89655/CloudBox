@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="lib/w3.css">
+  <script src="lib/jquery.js"></script>
+  <script src="lib/vue.js"></script>
+
+  <style>
+    #app {
+      position: absolute;
+      left: 50%;
+    }
+
+    #root {
+      position: relative;
+      left: -50%;
+      top: 50px;
+      width: 600px;
+      border-radius: 5px;
+      border: 1px solid lightgray;
+      background: white;
+      opacity: 0.8;
+      box-shadow: 5px 10px 18px #888;
+    }
+
+    .bk {
+      position: absolute;
+      top: 0;
+      left: 0;
+      background-color: #00b7ff;
+      height: 100vh;
+      width: 100vw;
+      filter: blur(3px);
+      background-color: blue;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='50' height='25' viewBox='0 0 50 25'%3E%3Cdefs%3E%3Crect stroke='%23ffffff' stroke-width='0.1' width='1' height='1' id='s'/%3E%3Cpattern id='a' width='2' height='2' patternUnits='userSpaceOnUse'%3E%3Cg stroke='%23ffffff' stroke-width='0.1'%3E%3Crect fill='%23fafafa' width='1' height='1'/%3E%3Crect fill='%23ffffff' width='1' height='1' x='1' y='1'/%3E%3Crect fill='%23f5f5f5' width='1' height='1' y='1'/%3E%3Crect fill='%23f0f0f0' width='1' height='1' x='1'/%3E%3C/g%3E%3C/pattern%3E%3Cpattern id='b' width='5' height='11' patternUnits='userSpaceOnUse'%3E%3Cg fill='%23ebebeb'%3E%3Cuse xlink:href='%23s' x='2' y='0'/%3E%3Cuse xlink:href='%23s' x='4' y='1'/%3E%3Cuse xlink:href='%23s' x='1' y='2'/%3E%3Cuse xlink:href='%23s' x='2' y='4'/%3E%3Cuse xlink:href='%23s' x='4' y='6'/%3E%3Cuse xlink:href='%23s' x='0' y='8'/%3E%3Cuse xlink:href='%23s' x='3' y='9'/%3E%3C/g%3E%3C/pattern%3E%3Cpattern id='c' width='7' height='7' patternUnits='userSpaceOnUse'%3E%3Cg fill='%2366dbff'%3E%3Cuse xlink:href='%23s' x='1' y='1'/%3E%3Cuse xlink:href='%23s' x='3' y='4'/%3E%3Cuse xlink:href='%23s' x='5' y='6'/%3E%3Cuse xlink:href='%23s' x='0' y='3'/%3E%3C/g%3E%3C/pattern%3E%3Cpattern id='d' width='11' height='5' patternUnits='userSpaceOnUse'%3E%3Cg fill='%23ffffff'%3E%3Cuse xlink:href='%23s' x='1' y='1'/%3E%3Cuse xlink:href='%23s' x='6' y='3'/%3E%3Cuse xlink:href='%23s' x='8' y='2'/%3E%3Cuse xlink:href='%23s' x='3' y='0'/%3E%3Cuse xlink:href='%23s' x='0' y='3'/%3E%3C/g%3E%3Cg fill='%23ccf2ff'%3E%3Cuse xlink:href='%23s' x='8' y='3'/%3E%3Cuse xlink:href='%23s' x='4' y='2'/%3E%3Cuse xlink:href='%23s' x='5' y='4'/%3E%3Cuse xlink:href='%23s' x='10' y='0'/%3E%3C/g%3E%3C/pattern%3E%3Cpattern id='e' width='47' height='23' patternUnits='userSpaceOnUse'%3E%3Cg fill='%230099ff'%3E%3Cuse xlink:href='%23s' x='2' y='5'/%3E%3Cuse xlink:href='%23s' x='23' y='13'/%3E%3Cuse xlink:href='%23s' x='4' y='18'/%3E%3Cuse xlink:href='%23s' x='35' y='9'/%3E%3C/g%3E%3C/pattern%3E%3Cpattern id='f' width='61' height='31' patternUnits='userSpaceOnUse'%3E%3Cg fill='%230099ff'%3E%3Cuse xlink:href='%23s' x='16' y='0'/%3E%3Cuse xlink:href='%23s' x='13' y='22'/%3E%3Cuse xlink:href='%23s' x='44' y='15'/%3E%3Cuse xlink:href='%23s' x='12' y='11'/%3E%3C/g%3E%3C/pattern%3E%3C/defs%3E%3Crect fill='url(%23a)' width='50' height='25'/%3E%3Crect fill='url(%23b)' width='50' height='25'/%3E%3Crect fill='url(%23c)' width='50' height='25'/%3E%3Crect fill='url(%23d)' width='50' height='25'/%3E%3Crect fill='url(%23e)' width='50' height='25'/%3E%3Crect fill='url(%23f)' width='50' height='25'/%3E%3C/svg%3E");
+      background-attachment: fixed;
+      background-size: cover;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bk"></div>
+
+  <div id="app">
+    <div id="root">
+      <div class="w3-center">
+        <br>
+        <img src="../../images/login.png" alt="Avatar" style="width:30%" class="w3-circle w3-margin-top">
+      </div>
+      <form class="w3-container" action="/action_page.php">
+        <div class="w3-section">
+          <label>
+            <b>ドメイン：</b>
+          </label>
+          <input class="w3-input w3-border w3-margin-bottom" type="text" placeholder="ドメイン" name="domain" required v-model="appData.domain">
+<!-- 
+          <label>
+            <b>組織Id</b>
+          </label>
+          <input class="w3-input w3-border w3-margin-bottom" type="text" placeholder="組織Id" name="organizationId" required v-model="appData.organizationId"> -->
+
+          <label>
+            <b>ユーザ名：</b>
+          </label>
+          <input class="w3-input w3-border w3-margin-bottom" type="text" placeholder="ユーザ名" name="usrname" required v-model="appData.userName">
+
+          <label>
+            <b>パースワード：</b>
+          </label>
+          <input class="w3-input w3-border" type="text" placeholder="パースワード" name="psw" required v-model="appData.password">
+
+          <input class="w3-check w3-margin-top" type="checkbox" checked="checked"> Remember me
+        </div>
+      </form>
+
+      <div class="w3-container w3-border-top w3-padding-16 w3-light-grey">
+        <button v-on:click="login()" type="button" class="w3-right w3-button w3-green">Login</button>
+      </div>
+
+    </div>
+  </div>
+
+
+  <script src="js/base.js"></script>
+  <script src="options.js"></script>
+</body>
+
+</html>

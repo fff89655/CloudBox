@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <link rel="stylesheet" href="lib/w3.css">
+  <script src="lib/jquery.js"></script>
+  <script src="lib/vue.js"></script>
+
+  <style>
+    .w3-ul li:hover {
+      cursor: pointer;
+    }
+    .hightLight{
+      background:yellow;
+    }
+  </style>
+</head>
+
+<body style="width:480px;">
+  <div id="app">
+    <div style="padding:3px;">
+      <div>
+        <div class="w3-cell" style="width:100%;">
+          <input class="w3-input w3-border" type="text" v-on:input="onSearchInput(event)">
+        </div>
+        <div class="w3-cell">
+          <button class="w3-button w3-white w3-border w3-border-blue" v-on:click="onClearDataClick()">clearDataobjMap</button>
+        </div>
+      </div>
+      <div v-html="r.txt" v-for="r in appData.searchResult">
+      </div>
+    </div>
+    <ul class="w3-ul w3-border">
+
+      <li class="w3-hover-black" href="pages/objectRelations/index.html" v-on:click="onMenuClick(event)">
+        All Object
+      </li>
+      <li class="w3-hover-black" href="pages/startPage/index.html" v-on:click="onMenuClick(event)">
+        Quick Search
+      </li>
+      <li class="w3-hover-black" href="pages/search/index.html" v-on:click="onMenuClick(event)">
+        Search SOQL
+      </li>
+      <li class="w3-hover-black" href="pages/record/index.html" v-on:click="onMenuClick(event)">
+        Record
+      </li>
+      <li class="w3-hover-black" href="pages/apexClass/index.html" v-on:click="onMenuClick(event)">
+        apexClass
+      </li>
+      <li class="w3-hover-black" href="pages/visualPage/index.html" v-on:click="onMenuClick(event)">
+        visualPage
+      </li>
+      <li class="w3-hover-black" href="pages/test/testPage.html" v-on:click="onMenuClick(event)">
+        Test
+      </li>
+    </ul>
+  </div>
+
+
+  <script src="js/base.js"></script>
+  <script src="popup.js"></script>
+</body>
+
+</html>
