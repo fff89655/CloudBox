@@ -97,46 +97,11 @@ Vue.component('obj-field-list', {
         },
         onRefClick : function(f){
             var objRef = null;
-            if(this.object.custom == true){
-
-                var objName = this.object.name.replace("__c","");
-                if(objName.indexOf("__") != -1){
-                    objName = objName.substring(objName.indexOf("__") + 2 , objName.length);
-                }
-                
-                SalesforceAPI.requestToolingApi("SELECT Id,DeveloperName FROM CustomObject WHERE DeveloperName='" + objName + "'" ,function(doc,text){
-
-                    var objId = doc.records[0].Id;
-
-                    if(f.custom == true){
-                        var filedName = f.name.replace("__c","");
-                        if(filedName.indexOf("__") != -1){
-                            filedName = filedName.substring(filedName.indexOf("__") + 2 , filedName.length);
-                        }
-                        SalesforceAPI.requestToolingApi(`SELECT Id FROM CustomField WHERE TableEnumOrId='${objId}' AND DeveloperName='${filedName}'` ,function(doc,text){
-                            var fieldId = doc.records[0].Id;
-                            window.open(SalesforceAPI.LoginInfo.domain + `${fieldId}?setupid=CustomObjects`);
-                        });
-                    }else{
-                        window.open(SalesforceAPI.LoginInfo.domain + `_ui/common/config/field/StandardFieldAttributes/d?id=${f.name}&type=${objId}`);
-                    }
-
-                });
-            }else{
-                if(f.custom == true){
-                    var filedName = f.name.replace("__c","");
-                    if(filedName.indexOf("__") != -1){
-                        filedName = filedName.substring(filedName.indexOf("__") + 2 , filedName.length);
-                    }
-                    SalesforceAPI.requestToolingApi(`SELECT Id FROM CustomField WHERE TableEnumOrId='${objId}' AND DeveloperName='${filedName}'` ,function(doc,text){
-                        var fieldId = doc.records[0].Id;
-                        window.open(SalesforceAPI.LoginInfo.domain + `${fieldId}?setupid=CustomObjects`);
-                    });
-                }else{
-                    window.open(SalesforceAPI.LoginInfo.domain + `_ui/common/config/field/StandardFieldAttributes/d?id=${f.name}&type=${this.object.name}`);
-                }
-            }
-
+            var objName = this.object.name;
+            var fieldName = f.name;
+            SalesforceAPI.getFieldPageUrl(objName, fieldName, url => {
+              window.open(url);
+            });
         }
     }
 })

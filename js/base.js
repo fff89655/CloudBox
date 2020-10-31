@@ -1,5 +1,46 @@
 //base level APIs
 
+/* 使い方:
+ var syncHelper = new SyncHelper(5);
+ for(var i=0 ; i<5 ; i++){
+   setTimeout(function(){
+     syncHelper.countStep();
+   },200);
+ }
+ syncHelper.onOver(function(){
+   alert("sync all over");
+ });
+ syncHelper.startCount();
+*/
+var SyncHelper = function(maxCount){
+  this.counter = 0;
+  this.maxCount = maxCount;
+  this.overCallBack = null;
+  this.runTimes = 0;
+};
+SyncHelper.prototype.countStep = function(){
+  this.counter ++;
+}
+SyncHelper.prototype.startCount = function(){
+  var me = this;
+  me.runTimes ++;
+  if(me.runTimes > 2000){
+    alert("sync times ovoer 2000.");
+    return;
+  }
+  setTimeout(function(){
+    if(me.counter != me.maxCount){
+      me.startCount();
+    }else{
+      if(me.overCallBack){
+        me.overCallBack();
+      }
+    }
+  },300);
+}
+SyncHelper.prototype.onOver = function(callback){
+  this.overCallBack = callback;
+}
 
 var ChromeAPI = (function () {
     var api = function () { }
@@ -91,15 +132,15 @@ var SalesforceAPI = (function () {
                 var domain = serverUrl.substring(0, serverUrl.indexOf("salesforce.com/") + "salesforce.com/".length);
                 var sessionId = sessionIdEl[0].innerHTML;
 
-                api.LoginInfo = {};
-                api.LoginInfo.userName = userName;
-                api.LoginInfo.password = password;
-                api.LoginInfo.domain = domain;
-                api.LoginInfo.organizationId = organizationId;
-                api.LoginInfo.sessionId = sessionId;
+                api.LoginInfor = {};
+                api.LoginInfor.userName = userName;
+                api.LoginInfor.password = password;
+                api.LoginInfor.domain = domain;
+                api.LoginInfor.organizationId = organizationId;
+                api.LoginInfor.sessionId = sessionId;
 
-                ChromeAPI.saveLocalData("LoginInfo", api.LoginInfo);
-                if (callBack) callBack(api.LoginInfo);
+                ChromeAPI.saveLocalData("LoginInfor", api.LoginInfor);
+                if (callBack) callBack(api.LoginInfor);
             } else {
                 if (errorCallBack) {
                     errorCallBack(JSON.parse(xhr.responseText));
@@ -108,107 +149,90 @@ var SalesforceAPI = (function () {
         }
         xhr.send(sendStr);
     }
+    
+    // logininfor変数を作成
+    api._createLoginInfor = function(cookies){
+      var loginInfors = [];
+      cookies.forEach(cookie => {
+        var loginInfor = {};
+        loginInfor.domain = "https://" + cookie.domain + "/";
+        loginInfor.sessionId = cookie.value;
+        loginInfors.push(loginInfor);
+      });
+      api.LoginInfors = loginInfors;
+    }
+
+    // loginInforをSalesforceに接続して、検証する、接続できないものを削除
+    api._validateLoginInfors = function(callback, errorCallback){
+      var syncHelper = new SyncHelper(api.LoginInfors.length);
+      api.LoginInfors.forEach(loginInfor => {
+        api.LoginInfor = loginInfor;
+        api.requestRESTApi("services/data/v25.0/", 
+          function(d){
+            var userId = null;
+            syncHelper.countStep();
+
+            d = JSON.parse(d);
+            if(d.identity.lastIndexOf("/") > 0){
+                userId = d.identity.substring(d.identity.lastIndexOf("/") + 1, d.identity.length);
+            }
+            if(userId != null){
+              loginInfor.userid = userId;
+            }
+          }, 
+          function(d){
+              console.log("session invalid:" + cookie.domain + "--" + cookie.value);
+          }
+        );
+      });
+      syncHelper.onOver(function(){
+        var resultLoginInfor = [];
+        api.LoginInfors.forEach(loginInfor => {
+          if(loginInfor){
+            resultLoginInfor.push(loginInfor);
+          }
+        });
+        api.LoginInfors = resultLoginInfor;
+        if(resultLoginInfor.length > 0){
+          callback();
+        }else{
+          errorCallback();
+        }
+      });
+      syncHelper.startCount();
+    }
+
     api.login = function (callBack, errorCallBack) {
+      ChromeAPI.searchCookie("salesforce.com","sid",
+        function(cookies){
+          api._createLoginInfor(cookies);
+          api._validateLoginInfors(
+            function(){
+              api.LoginInfor= api.LoginInfors[0];
+              callBack(api.loginInfor, api.loginInfors);
+            }, 
+            function(){
+              alert("session not exists");
+              ChromeAPI.clearLocalData();
+              window.location.href = "https://login.salesforce.com/";
+            }
+          );
 
-        ChromeAPI.searchCookie("salesforce.com","sid",
-            function(cookies){
-                api.userId = null;
-
-                cookies.forEach(cookie => {
-                   if(api.userId == null) {
-                        api.LoginInfo = {};
-                        api.LoginInfo.domain = "https://" + cookie.domain + "/";
-                        api.LoginInfo.sessionId = cookie.value;
-                        api.requestRESTApi("services/data/v25.0/", 
-                            function(d){
-                                d = JSON.parse(d);
-                                if(d.identity.lastIndexOf("/") > 0){
-                                    api.userId = d.identity.substring(d.identity.lastIndexOf("/") + 1, d.identity.length);
-                                }
-                                if(api.userId != null){
-                                    if (callBack) callBack(api.LoginInfo);
-                                }
-                            }, 
-                            function(d){
-                                console.log("session invalid:" + cookie.domain + "--" + cookie.value);
-                            });
-                   }
-                });
-
-                setTimeout(function(){
-                    if(api.userId == null){
-                        alert("session invalid");
-                        ChromeAPI.clearLocalData();
-                        window.location.href = "https://login.salesforce.com/";
-                    }
-                }, 5000);
-            }, function(){
-                alert("not login session.");
-                ChromeAPI.clearLocalData();
-                window.location.href = "https://login.salesforce.com/";
-            });
-
-        // ChromeAPI.getLocalData("LoginInfo", function(d){
-        //     if(d.LoginInfo){
-
-        //         var xhr = new XMLHttpRequest();
-        //         xhr.open("POST", d.LoginInfo.domain + `services/Soap/c/43.0/`, true);
-        //         xhr.setRequestHeader("Content-Type", "text/xml");
-        //         xhr.setRequestHeader("soapAction", "Wololo");
-                
-        //             var sendStr = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:enterprise.soap.sforce.com">
-        //             <soapenv:Header>
-        //             <urn:LoginScopeHeader>
-        //                 <urn:organizationId>${d.LoginInfo.organizationId}</urn:organizationId>
-        //             </urn:LoginScopeHeader>
-        //             </soapenv:Header>
-        //             <soapenv:Body>
-        //             <urn:login>
-        //                 <urn:username>${d.LoginInfo.userName}</urn:username>
-        //                 <urn:password>${d.LoginInfo.password}</urn:password>
-        //             </urn:login>
-        //             </soapenv:Body>
-        //         </soapenv:Envelope>`;
-        
-        //         xhr.onload = function () {
-        //             if (xhr.status == 200) {
-        //                 var xmlDoc = xhr.responseXML;
-        
-        //                 var sessionIdEl = $(xmlDoc).find("sessionId");
-        //                 var serverUrl = $(xmlDoc).find("serverUrl")[0].innerHTML;
-        //                 var domain = serverUrl.substring(0, serverUrl.indexOf("salesforce.com/") + "salesforce.com/".length);
-        //                 var sessionId = sessionIdEl[0].innerHTML;
-        
-        //                 api.LoginInfo = {};
-        //                 api.LoginInfo.userName = d.LoginInfo.userName;
-        //                 api.LoginInfo.password = d.LoginInfo.password;
-        //                 api.LoginInfo.domain = d.LoginInfo.domain;
-        //                 api.LoginInfo.organizationId = d.LoginInfo.organizationId;
-        //                 api.LoginInfo.sessionId = sessionId;
-        
-        //                 ChromeAPI.saveLocalData("LoginInfo", api.LoginInfo);
-        //                 if (callBack) callBack(api.LoginInfo);
-        //             } else {
-        //                 if (errorCallBack) {
-        //                     errorCallBack(JSON.parse(xhr.responseText));
-        //                 }
-        //             }
-        //         }
-        //         xhr.send(sendStr);
-        //     }else{
-        //         errorCallBack("No optionData.");
-        //     }
-        // })
-
+        }, function(){
+          alert("not login session.");
+          ChromeAPI.clearLocalData();
+          window.location.href = "https://login.salesforce.com/";
+        }
+      );
     }
 
     api.requestToolingApi = function (soql, callBack, errorCallBack) {
         var xhr = new XMLHttpRequest();
-        xhr.open("GET", api.LoginInfo.domain +"services/data/v35.0/tooling/query?q=" + soql.replace(" " + "+"), true);
+        xhr.open("GET", api.LoginInfor.domain +"services/data/v35.0/tooling/query?q=" + soql.replace(" " + "+"), true);
         
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.setRequestHeader("X-PrettyPrint", "1");
-        xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfo.sessionId);
+        xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfor.sessionId);
     
         xhr.onload = function () {
         if (xhr.statusText == "OK") {
@@ -220,14 +244,14 @@ var SalesforceAPI = (function () {
         xhr.send();
 
         // var xhr = new XMLHttpRequest();
-        // xhr.open("POST", api.LoginInfo.domain + "services/Soap/T/43.0", true);
+        // xhr.open("POST", api.LoginInfor.domain + "services/Soap/T/43.0", true);
         // xhr.setRequestHeader("Content-Type", "text/xml");
         // xhr.setRequestHeader("soapAction", "Wololo");
 
         // var sendStr = `<v:Envelope xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns:d="http://www.w3.org/2001/XMLSchema" xmlns:c="http://schemas.xmlsoap.org/soap/encoding/" xmlns:v="http://schemas.xmlsoap.org/soap/envelope/">
         // <v:Header>
         //   <n0:SessionHeader xmlns:n0="urn:tooling.soap.sforce.com">
-        //     <n0:sessionId>${api.LoginInfo.sessionId}</n0:sessionId>
+        //     <n0:sessionId>${api.LoginInfor.sessionId}</n0:sessionId>
         //   </n0:SessionHeader>
         // </v:Header>
         // <v:Body>
@@ -254,10 +278,10 @@ var SalesforceAPI = (function () {
 
     api.requestData = function (soql, callBack, errorCallBack) {
         var xhr = new XMLHttpRequest();
-        xhr.open("GET", api.LoginInfo.domain + "services/data/v43.0/query?q=" + soql.replace(" " + "+"), true);
+        xhr.open("GET", api.LoginInfor.domain + "services/data/v43.0/query?q=" + soql.replace(" " + "+"), true);
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.setRequestHeader("X-PrettyPrint", "1");
-        xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfo.sessionId);
+        xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfor.sessionId);
 
         xhr.onload = function () {
             if (xhr.status == 200) {
@@ -271,13 +295,12 @@ var SalesforceAPI = (function () {
         xhr.send();
     }
 
-    
     api.requestCreateData = function(objectName, data, callBack, errorCallBack) {
         var xhr = new XMLHttpRequest();
-        xhr.open("POST", api.LoginInfo.domain +`services/data/v43.0/sobjects/${objectName}`, true);
+        xhr.open("POST", api.LoginInfor.domain +`services/data/v43.0/sobjects/${objectName}`, true);
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.setRequestHeader("X-PrettyPrint", "1");
-        xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfo.sessionId);
+        xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfor.sessionId);
     
         xhr.onload = function () {
         if (xhr.status == 201) {
@@ -292,10 +315,10 @@ var SalesforceAPI = (function () {
     api.requestRESTApi = function (url, callBack, errorCallBack) {
 
         var xhr = new XMLHttpRequest();
-        xhr.open("GET", api.LoginInfo.domain + url, true);
+        xhr.open("GET", api.LoginInfor.domain + url, true);
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.setRequestHeader("X-PrettyPrint", "1");
-        xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfo.sessionId);
+        xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfor.sessionId);
 
         xhr.onload = function () {
             if (xhr.status == 200) {
@@ -311,10 +334,10 @@ var SalesforceAPI = (function () {
 
     api.requestSaveData = function (objectName, objectId, data, callBack, errorCallBack) {
         var xhr = new XMLHttpRequest();
-        xhr.open("PATCH", `${api.LoginInfo.domain}services/data/v43.0/sobjects/${objectName}/${objectId}`, true);
+        xhr.open("PATCH", `${api.LoginInfor.domain}services/data/v43.0/sobjects/${objectName}/${objectId}`, true);
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.setRequestHeader("X-PrettyPrint", "1");
-        xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfo.sessionId);
+        xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfor.sessionId);
 
         xhr.onload = function () {
             if (xhr.status == 200) {
@@ -328,21 +351,66 @@ var SalesforceAPI = (function () {
         xhr.send(data);
     }
 
-    function requestCreateData(objectName, data, callBack, errorCallBack) {
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", `${api.LoginInfo.domain}services/data/v43.0/sobjects/${objectName}`, true);
-        xhr.setRequestHeader("Content-Type", "application/json");
-        xhr.setRequestHeader("X-PrettyPrint", "1");
-        xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfo.sessionId);
-
-        xhr.onload = function () {
-            if (xhr.status == 201) {
-                callBack(JSON.parse(xhr.responseText));
-            } else {
-                errorCallBack(JSON.parse(xhr.responseText));
-            }
+    api.getObjIdFromName = function(objName, callback){
+      if(objName.endsWith("__c")){
+        var searchName = objName.replace("__c","");
+        if(searchName.indexOf("__") != -1){
+          searchName = searchName.substring(searchName.indexOf("__") + 2 , searchName.length);
         }
-        xhr.send(data);
+        api.requestToolingApi("SELECT Id,DeveloperName FROM CustomObject WHERE DeveloperName='" + searchName + "'" ,function(doc,text){
+          var oId = doc.records[0].Id;
+          callback(oId);
+        });
+      }else{
+        callback(objName);
+      }
+    }
+
+    api.getFieldIdFromName = function(objName, fieldName, callback){
+      if(fieldName.endsWith("__c")){
+        var fieldName = fieldName.replace("__c","");
+        api.getObjIdFromName(objName, function(objId){
+          api.requestToolingApi(`SELECT Id,DeveloperName,TableEnumOrId FROM CustomField WHERE DeveloperName='${fieldName}' AND TableEnumOrId='${objId}'` ,function(doc,text){
+            var fId = doc.records[0].Id;
+            callback(fId);
+          });
+        });
+      }else{
+        callback(fieldName);
+      }
+    }
+
+    api.getObjPageUrl = function(objName, callback){
+
+      if(objName.endsWith("__c")){
+        var searchName = objName.replace("__c","");
+        if(searchName.indexOf("__") != -1){
+          searchName = searchName.substring(searchName.indexOf("__") + 2 , searchName.length);
+        }
+        
+        api.getObjIdFromName(objName, function(objId){
+          callback(api.LoginInfor.domain + objId + "?setupid=CustomObjects");
+        });
+      }else{
+        callback(api.LoginInfor.domain + "p/setup/layout/LayoutFieldList?type=" + objName);
+      }
+    }
+
+    api.getFieldPageUrl = function(objName, fieldName, callback){
+      
+      if(fieldName.endsWith("__c")){
+          
+        api.getObjIdFromName(objName, function(objId){
+          api.getFieldIdFromName(objName, fieldName, function(fieldId){
+            callback(api.LoginInfor.domain + fieldId + "?setupid=CustomObjects");
+          });
+        });
+
+      }else{
+        api.getObjIdFromName(objName, function(objId){
+          callback(`${api.LoginInfor.domain}_ui/common/config/field/StandardFieldAttributes/d?setupid=UserFields&id=${fieldName}&type=${objId}`);
+        });
+      }
     }
 
     return api;
@@ -360,7 +428,7 @@ var BaseAPI = (function () {
             } else {
                 api._requestObjects(function (objMap) {
                     callBack(objMap);
-                })
+                });
             }
         });
     }
@@ -452,11 +520,3 @@ var BaseAPI = (function () {
     return api;
 
 })();
-
-// SalesforceAPI.login(
-//     function(){
-//         BaseAPI.loadObjMap(function(){
-
-//         });
-//     }
-// );

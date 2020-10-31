@@ -31,11 +31,10 @@ var quickSearchTemplate = `
             <template v-if="r.type=='Object'">
                 <div class="objectColTitle w3-col w3-padding-small w3-border" style="width:100px">{{r.type}}</div>
 
-                <div class="w3-col w3-padding-small w3-border" style="width:100px;">
-                    <a target="_blank" href=""
-                        v-on:click="onObjRefClick(event, r.target.ref)">Refrence</a>
+                <div class="w3-col w3-padding-small w3-border" style="width:120px;">
+                    <a target="_blank" href="" v-on:click="onObjRefClick(event, r.target.ref)">OpenObject</a>
                 </div>
-                <div class="w3-col w3-padding-small w3-border" style="width:100px;">
+                <div class="w3-col w3-padding-small w3-border" style="width:120px;">
                     <a v-bind:href="'/pages/objDef/index.html?objectName=' + r.target.ref.name " target="_blank">ObjDef</a>
                 </div>
                 <div class="w3-col w3-padding-small w3-border" style="width:100px;">
@@ -48,9 +47,17 @@ var quickSearchTemplate = `
             <template v-if="r.type=='Field'">
                 <div class="fieldColTitle w3-col w3-padding-small w3-border" style="width:100px">{{r.type}}</div>
 
+                <div class="w3-col w3-padding-small w3-border" style="width:120px;">
+                    <a target="_blank" href="" v-on:click="onFieldRefClick(event, r.target)">OpenField</a>
+                </div>
+                <div class="w3-col w3-padding-small w3-border" style="width:120px;">
+                    <a target="_blank" href="" v-on:click="onObjRefClick(event, r.target.object)">OpenObject</a>
+                </div>
+                <div class="w3-col w3-padding-small w3-border" style="width:120px;">
+                    <a v-bind:href="'/pages/objDef/index.html?objectName=' + r.target.object.name " target="_blank">ObjDef</a>
+                </div>
                 <div class="w3-col w3-padding-small w3-border" style="width:100px;">
-                    <a target="_blank" href=""
-                        v-on:click="onObjRefClick(event, r.target.ref)">Refrence</a>
+                    <a v-bind:href="'/pages/objectDatas/index.html?objectName=' + r.target.object.name " target="_blank">Datas</a>
                 </div>
                 <div class="w3-col s3 w3-padding-small w3-border">{{r.target.objectLabel}} -> {{r.target.ref.label}}</div>
                 <div class="w3-col s3 w3-padding-small w3-border">{{r.target.objectName}}.{{r.target.ref.name}}</div>
@@ -77,8 +84,8 @@ Vue.component('quick-search', {
 
         Object.values(this.obj_map).forEach(obj => {
             obj.fields.forEach(field => {
-                searchTarget.push({searchKey:field.name, type:"Field" , ref:field , objectName: obj.name , objectLabel:obj.label});
-                searchTarget.push({searchKey:field.label, type:"Field" , ref:field , objectName: obj.name , objectLabel:obj.label});
+                searchTarget.push({searchKey:field.name, type:"Field" , object:obj, ref:field , objectName: obj.name , objectLabel:obj.label});
+                searchTarget.push({searchKey:field.label, type:"Field" , object:obj, ref:field , objectName: obj.name , objectLabel:obj.label});
             });
         });
 
@@ -131,21 +138,18 @@ Vue.component('quick-search', {
             this.searchResult = searchResult;
         },
         onObjRefClick : function(e, obj){
-            e.preventDefault();
-            if(obj.custom){
-                var searchName = obj.name.replace("__c","");
-                if(searchName.indexOf("__") != -1){
-                    searchName = searchName.substring(searchName.indexOf("__") + 2 , searchName.length);
-                }
-                
-                SalesforceAPI.requestToolingApi("SELECT Id,DeveloperName FROM CustomObject WHERE DeveloperName='" + searchName + "'" ,function(doc,text){
-                    var s = doc.records[0].Id;
-                    window.open(SalesforceAPI.LoginInfo.domain + s+ "?setupid=CustomObjects");
-                });
-            }else{
-                window.open(SalesforceAPI.LoginInfo.domain + "p/setup/layout/LayoutFieldList?type=" + obj.name);
-    
-            }
-        }
+          e.preventDefault();
+
+          SalesforceAPI.getObjPageUrl(obj.name, url=>{
+            window.open(url);
+          });
+      },
+      onFieldRefClick : function(e, field){
+        e.preventDefault();
+
+        SalesforceAPI.getFieldPageUrl(field.object.name, field.ref.name, url=>{
+          window.open(url);
+        });
+      }
     }
 })
