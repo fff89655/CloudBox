@@ -1,5 +1,9 @@
 
-SalesforceAPI.login(init);
+var parentWindow = window.parent;
+var parentLoginInfor = parentWindow.g_getLoginInfor();
+SalesforceAPI.LoginInfors = parentLoginInfor.LoginInfors;
+SalesforceAPI.LoginInfor = parentLoginInfor.LoginInfor;
+
 
 function init(){
     BaseAPI.loadObjMap(function(objMap){
@@ -21,167 +25,272 @@ function init(){
     });
 }
 
-function xxx(){
-    BaseAPI.getObjDef("ADC_JobRequest__c",function(r){
-        debugger;
-    })
-}
+init();
 
 var objPrefix = {};
 
-var appData = { idVal: "006p0000005BpqXAAS", 
+var STANDARD_ITEMS = ["Id",
+                    "Name",
+                    "CreatedById",
+                    "CreatedDate", 
+                    "LastModifiedById", 
+                    "LastModifiedDate", 
+                    "SystemModstamp",
+                    "LastReferencedDate",
+                    "LastViewedDate",
+                    "OwnerId", 
+                    "IsDeleted"];
+
+var appData = { idVal: "", 
                 objectName: "", 
+                objectLabel: "", 
                 recordData:null, 
                 selectItems:[], 
+                selectStandardItems:[],
+                selectReadOnlyItems:[],
                 editItemName:{}, 
                 objMap:null, 
                 selectObj:null ,
-                errMsg:null
-                ,reference:[]};
+                errMsg:null,
+                successMessage:null,
+                reference:[]};
 
 var vue = new Vue({
-    el: '#app',
-    data: { appData: appData },
-    methods: {
-        onSearchClick: function () {
-            if(this.appData.idVal.length < 3){
-                return;
-            }
-            var obj = objPrefix[this.appData.idVal.substring(0,3)];
-            if(obj){
-                appData.objectName = obj.name;
-            }
-            
-            var selectItems = {};
+  el: '#app',
+  data: { appData: appData },
+  methods: {
+    onSearchClick: function () {
+      if(this.appData.idVal.length < 3){
+        return;
+      }
+      var obj = objPrefix[this.appData.idVal.substring(0,3)];
+      if(obj){
+        appData.objectName = obj.name;
+        appData.objectLabel = obj.label;
+      }
+      
+      this._setItemsDef(obj);
 
-            obj.fields.forEach(f => {
-                selectItems[f.name] = f;
-            });
+      var soql = `SELECT ${this._getAllItemName(obj).join(",")} FROM ${appData.objectName} WHERE Id='${appData.idVal}'`;
 
-            var soql = `SELECT ${Object.keys(selectItems).join(",")} FROM ${appData.objectName} WHERE Id='${appData.idVal}'`;
+      var me = this;
+      SalesforceAPI.requestData(soql ,function(r){
+        if(r.totalSize == 1){
+          appData.recordData = r.records[0];
 
-            var me = this;
-            SalesforceAPI.requestData(soql ,function(r){
-                if(r.totalSize == 1){
-                    appData.recordData = r.records[0];
+          me._setRelationItem(obj, appData.recordData);
 
-                    me.setReference(obj, appData.recordData);
+        }
+        console.log(r);
+      });
 
-                    selectItems = Object.values(selectItems);
-
-                    selectItems.sort(function(a, b){
-                        if(a.name == "Id" || a.name == "Name"){return -1;}
-                        
-                        if(a.label.length <= b.label.length){
-                            return -1;
-                        }else{
-                            return 1;
-                        }
-                    });
-
-                    appData.selectItems = selectItems;
-                }
-                console.log(r);
-            });
-
-        },
-        setReference : function(obj, record){
-            var reference = [];
-            obj.fields.forEach(f => {
-                if(f.type=="reference"){
-                    var r = {name:f.name, json:JSON.stringify(f)};
-                    if(record[f.name]){
-                        r.value = record[f.name];
-
-                        if(r.value.length > 3){
-                            var obj = objPrefix[r.value.substring(0,3)];
-                            if(obj){
-                                r.refType = obj;
-                            }
-                        }
-                    }
-                    reference.push(r);
-                }
-            });
-            appData.reference = reference;
-        },
-        onValueChange : function(e, name){
-            $(e.target).parent().addClass('editOver');
-            appData.editItemName[name] = true
-        },
-        onSaveClick : function(){
-            var updateObj = {};
-            Object.keys(appData.editItemName).forEach(k => {
-                updateObj[k] = appData.recordData[k];
-            });
-            console.log(updateObj);
-            if(appData.recordData.Id){
-                SalesforceAPI.requestSaveData(appData.objectName, appData.recordData.Id, JSON.stringify(updateObj) ,function(){
-                    alert("save over.")
-                });
-            }else{
-                SalesforceAPI.requestCreateData(appData.selectObj, JSON.stringify(appData.recordData) ,function(r){
-                    console.log(r);
-                    appData.recordData.Id = r.id;
-                    appData.recordData = appData.recordData;
-                    alert("save success");
-                    appData.errMsg = null;
-                },function(r){
-                    console.log(r);
-                    appData.errMsg = JSON.stringify(r) ;
-                });
-            }
-        },
-        onCreateClick : function(){
-            if(appData.selectObj && appData.objMap[appData.selectObj]){
-                    
-                appData.objectName = appData.selectObj;
-
-                var selectItems = {};
-
-                appData.objMap[appData.selectObj].fields.forEach(f => {
-                    selectItems[f.name] = f;
-                });
-
-                selectItems = Object.values(selectItems);
-                selectItems.sort(function(a, b){
-                    if(a.name == "Id" || a.name == "Name"){return -1;}
-                    
-                    if(a.label.length <= b.label.length){
-                        return -1;
-                    }else{
-                        return 1;
-                    }
-                });
-
-                appData.selectItems = selectItems;
+    },
+    _setRelationItem : function(obj, record){
+        var reference = [];
+        obj.fields.forEach(f => {
+            if(f.type=="reference"){
+                var r = {name:f.name, json:JSON.stringify(f)};
                 
-                appData.recordData = {};
-            }
-        },
-        onCopyClick : function(){
-            
-            var updateObj = {};
-            appData.selectItems.forEach(item => {
-                if(item.updateable){
-                    updateObj[item.name] = appData.recordData[item.name];
+                if(record[f.name]){
+                    r.value = record[f.name];
+
+                    if(r.value.length > 3){
+                        var obj = objPrefix[r.value.substring(0,3)];
+                        if(obj){
+                            r.refType = obj;
+                        }
+                    }
                 }
+                reference.push(r);
+            }
+        });
+        appData.reference = reference;
+    },
+    onValueChange : function(e, name){
+        $(e.target).parent().addClass('editOver');
+        appData.editItemName[name] = true
+    },
+    onSaveClick : function(){
+        var updateObj = {};
+        Object.keys(appData.editItemName).forEach(k => {
+            updateObj[k] = appData.recordData[k];
+        });
+        console.log(updateObj);
+        if(appData.recordData.Id){
+            SalesforceAPI.requestSaveData(appData.objectName, appData.recordData.Id, JSON.stringify(updateObj) ,function(){
+              appData.successMessage = "保存が成功しました。";
+              setTimeout(() => {
+                appData.successMessage = null;
+              }, 3000);
+              appData.errMsg = null;
+
+              appData.idVal = appData.recordData.Id;
+              this.onSearchClick();
+            },function(r){
+              console.log(r);
+              appData.errMsg = JSON.stringify(r) ;
+              setTimeout(() => {
+                appData.errMsg = null;
+              }, 8000);
             });
-            
-            appData.recordData.Id = null;
-            SalesforceAPI.requestCreateData(appData.objectName, JSON.stringify(updateObj) ,function(r){
-                console.log(r);
+        }else{
+            SalesforceAPI.requestCreateData(appData.selectObj, JSON.stringify(appData.recordData) ,function(r){
                 appData.recordData.Id = r.id;
                 appData.recordData = appData.recordData;
-                alert("save success");
+                
+                appData.successMessage = "新規が成功しました。";
+                setTimeout(() => {
+                  appData.successMessage = null;
+                }, 3000);
                 appData.errMsg = null;
+                
+                appData.idVal = r.id;
+                this.onSearchClick();
             },function(r){
                 console.log(r);
                 appData.errMsg = JSON.stringify(r) ;
+                setTimeout(() => {
+                  appData.errMsg = null;
+                }, 8000);
             });
-        },
-        onRefClick : function(){
-            window.open(SalesforceAPI.LoginInfo.domain + appData.recordData.Id);
         }
+    },
+    onCreateClick : function(){
+        if(appData.selectObj && appData.objMap[appData.selectObj]){
+                
+            appData.objectName = appData.selectObj;
+
+            var objDef = appData.objMap[appData.selectObj];
+            this._setItemsDef(objDef);
+
+            appData.recordData = {};
+
+            this._setRelationItem(objDef, appData.recordData);
+        }
+    },
+    _getAllItemName : function(objDef){
+      var result = [];
+      objDef.fields.forEach(f => {
+        result.push(f.name);
+      });
+      return result;
+    },
+    _setItemsDef : function(objDef){
+      
+      if(objDef){
+        appData.objectName = objDef.name;
+        appData.objectLabel = objDef.label;
+      }
+      
+      var selectItems = {};
+      var selectStandardItems = {};
+      var selectReadOnlyItems = {};
+
+      objDef.fields.forEach(f => {
+        if(STANDARD_ITEMS.includes(f.name)){
+          selectStandardItems[f.name] = f;
+        }else{
+          if(f.updateable){
+            selectItems[f.name] = f;
+          }else{
+            selectReadOnlyItems[f.name] = f;
+          }
+        }
+      });
+
+      selectItems = Object.values(selectItems);
+          
+      selectItems.sort(function(a, b){
+        if(a.label.length <= b.label.length){
+          return -1;
+        }else{
+          return 1;
+        }
+      });
+
+      selectReadOnlyItems = Object.values(selectReadOnlyItems);
+      
+      selectReadOnlyItems.sort(function(a, b){
+        if(a.label.length <= b.label.length){
+          return -1;
+        }else{
+          return 1;
+        }
+      });
+
+      appselectStandardItems = [];
+
+      for (const stdItem of STANDARD_ITEMS) {
+        if(selectStandardItems[stdItem]){
+          appselectStandardItems.push(selectStandardItems[stdItem]);
+        }
+      }
+      
+      appData.selectItems = selectItems;
+      appData.selectStandardItems = appselectStandardItems;
+      appData.selectReadOnlyItems = selectReadOnlyItems;
+
+    },
+    onCopyClick : function(){
+        
+        var updateObj = {};
+        appData.selectItems.forEach(item => {
+            if(item.updateable){
+                updateObj[item.name] = appData.recordData[item.name];
+            }
+        });
+        appData.selectStandardItems.forEach(item => {
+            if(item.updateable){
+                updateObj[item.name] = appData.recordData[item.name];
+            }
+        });
+        
+        appData.recordData.Id = null;
+        SalesforceAPI.requestCreateData(appData.objectName, JSON.stringify(updateObj) ,function(r){
+            console.log(r);
+            appData.recordData.Id = r.id;
+            appData.recordData = appData.recordData;
+
+            appData.successMessage = "コピーが成功しました。";
+            setTimeout(() => {
+              appData.successMessage = null;
+            }, 3000);
+
+            appData.errMsg = null;
+            
+            appData.idVal = r.id;
+            this.onSearchClick();
+            
+        },function(r){
+            console.log(r);
+            appData.errMsg = JSON.stringify(r) ;
+            setTimeout(() => {
+              appData.errMsg = null;
+            }, 8000);
+        });
+    },
+    onObjClick : function(){
+      var param = `objectName=${appData.objectName}'`;
+      window.parentWindow.g_openTabFromId('objDef', param);
+    },
+    onObjRefClick : function(){
+      SalesforceAPI.getObjPageUrl(appData.objectName, (url)=>{
+        window.open(url);
+      })
+    },
+    onRecordRefClick : function(){
+      SalesforceAPI.getRecordPageUrl(appData.recordData.Id, (url)=>{
+        window.open(url);
+      });
+    },
+    onFormulaClick : function(e, formula){
+      e.preventDefault();
+      alert(formula);
+    },
+    onRelationClick : function(e, rid){
+      e.preventDefault();
+      var param = `id=${rid}'`;
+      window.parentWindow.g_openTabFromId('record', param);
     }
+  }
 });

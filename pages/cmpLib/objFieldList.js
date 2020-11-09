@@ -46,7 +46,7 @@ var template = `
             <td>{{f.type}}</td>
             <td>{{f.custom}}</td>
             <td style="padding:0;">
-                <a class="w3-button w3-white w3-border w3-border-blue w3-round-large" href="" @click.prevent="onRefClick(f)" target="_blank">Ref</a>
+                <a class="w3-button w3-white w3-border w3-border-blue w3-round-large" href="" @click.prevent="onRefClick(f)" target="_blank">参照</a>
             </td>
         </tr>
     </table>

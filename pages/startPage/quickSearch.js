@@ -32,13 +32,13 @@ var quickSearchTemplate = `
                 <div class="objectColTitle w3-col w3-padding-small w3-border" style="width:100px">{{r.type}}</div>
 
                 <div class="w3-col w3-padding-small w3-border" style="width:120px;">
-                    <a target="_blank" href="" v-on:click="onObjRefClick(event, r.target.ref)">OpenObject</a>
+                    <a target="_blank" href="" v-on:click="onObjRefClick(event, r.target.ref)">参照</a>
                 </div>
                 <div class="w3-col w3-padding-small w3-border" style="width:120px;">
-                    <a v-bind:href="'/pages/objDef/index.html?objectName=' + r.target.ref.name " target="_blank">ObjDef</a>
+                  <a v-on:click="onDefClick(event, r.target.ref)" href="/">定義</a>
                 </div>
                 <div class="w3-col w3-padding-small w3-border" style="width:100px;">
-                    <a v-bind:href="'/pages/objectDatas/index.html?objectName=' + r.target.ref.name " target="_blank">Datas</a>
+                    <a v-on:click="onDataClick(event, r.target.ref)" href="/">データ</a>
                 </div>
                 <div class="w3-col s3 w3-padding-small w3-border">{{r.target.ref.label}}</div>
                 <div class="w3-col s3 w3-padding-small w3-border">{{r.target.ref.name}}</div>
@@ -48,16 +48,16 @@ var quickSearchTemplate = `
                 <div class="fieldColTitle w3-col w3-padding-small w3-border" style="width:100px">{{r.type}}</div>
 
                 <div class="w3-col w3-padding-small w3-border" style="width:120px;">
-                    <a target="_blank" href="" v-on:click="onFieldRefClick(event, r.target)">OpenField</a>
+                    <a target="_blank" href="" v-on:click="onFieldRefClick(event, r.target)">項目参照</a>
                 </div>
                 <div class="w3-col w3-padding-small w3-border" style="width:120px;">
-                    <a target="_blank" href="" v-on:click="onObjRefClick(event, r.target.object)">OpenObject</a>
+                    <a target="_blank" href="" v-on:click="onObjRefClick(event, r.target.object)">OBJ参照</a>
                 </div>
                 <div class="w3-col w3-padding-small w3-border" style="width:120px;">
-                    <a v-bind:href="'/pages/objDef/index.html?objectName=' + r.target.object.name " target="_blank">ObjDef</a>
+                    <a v-on:click="onDefClick(event, r.target.object)" href="/">定義</a>
                 </div>
                 <div class="w3-col w3-padding-small w3-border" style="width:100px;">
-                    <a v-bind:href="'/pages/objectDatas/index.html?objectName=' + r.target.object.name " target="_blank">Datas</a>
+                    <a v-on:click="onDataClick(event, r.target.object)" href="/">データ</a>
                 </div>
                 <div class="w3-col s3 w3-padding-small w3-border">{{r.target.objectLabel}} -> {{r.target.ref.label}}</div>
                 <div class="w3-col s3 w3-padding-small w3-border">{{r.target.objectName}}.{{r.target.ref.name}}</div>
@@ -96,53 +96,63 @@ Vue.component('quick-search', {
         });
     },
     methods: {
-        searchKeyDown : function(e){
-            if(e.keyCode == 13){
-                this.onSearchInput();
-            }
-        },
-        onSearchInput : function(){
-            
-            this.searchResult = null;
+      searchKeyDown : function(e){
+          if(e.keyCode == 13){
+              this.onSearchInput();
+          }
+      },
+      onSearchInput : function(){
+          
+          this.searchResult = null;
 
-            if(!this.searchVal)return;
+          if(!this.searchVal)return;
 
-            var searchText = this.searchVal;
+          var searchText = this.searchVal;
 
-            var regex = new RegExp(`${searchText}`,"i");
+          var regex = new RegExp(`${searchText}`,"i");
 
-            var searchResult = [];
+          var searchResult = [];
 
-            var searchTarget = [];
+          var searchTarget = [];
 
-            this.searchTarget.forEach(target => {
-                if(this.options.objectChk == true && target.type =="Object"){
-                    searchTarget.push(target);
-                }else if(this.options.fieldChk == true && target.type =="Field"){
-                    searchTarget.push(target);
-                }
-            });
-
-            searchTarget.forEach(target => {
-                var r = regex.exec(target.searchKey);
-                if(r!=null){
-                    var t1 = target.searchKey.substring(0,r.index);
-                    var t2 = r[0];
-                    var t3 = target.searchKey.substring(r.index + r[0].length , target.searchKey.length);
-                    var txt = `${t1}<span class="hightLight">${t2}</span>${t3}`
-                    searchResult.push({target:target, txt:txt, type:target.type});
-                    return;
-                }
-            });
-
-            this.searchResult = searchResult;
-        },
-        onObjRefClick : function(e, obj){
-          e.preventDefault();
-
-          SalesforceAPI.getObjPageUrl(obj.name, url=>{
-            window.open(url);
+          this.searchTarget.forEach(target => {
+              if(this.options.objectChk == true && target.type =="Object"){
+                  searchTarget.push(target);
+              }else if(this.options.fieldChk == true && target.type =="Field"){
+                  searchTarget.push(target);
+              }
           });
+
+          searchTarget.forEach(target => {
+              var r = regex.exec(target.searchKey);
+              if(r!=null){
+                  var t1 = target.searchKey.substring(0,r.index);
+                  var t2 = r[0];
+                  var t3 = target.searchKey.substring(r.index + r[0].length , target.searchKey.length);
+                  var txt = `${t1}<span class="hightLight">${t2}</span>${t3}`
+                  searchResult.push({target:target, txt:txt, type:target.type});
+                  return;
+              }
+          });
+
+          this.searchResult = searchResult;
+      },
+      onObjRefClick : function(e, obj){
+        e.preventDefault();
+
+        SalesforceAPI.getObjPageUrl(obj.name, url=>{
+          window.open(url);
+        });
+      },
+      onDefClick : function(e,obj){
+        e.preventDefault();
+        var param = `objectName=${obj.name}'`;
+        window.parentWindow.g_openTabFromId('objDef', param);
+      },
+      onDataClick : function(e,obj){
+        e.preventDefault();
+        var param = `objectName=${obj.name}&initTab=dataTab'`;
+        window.parentWindow.g_openTabFromId('objDef', param);
       },
       onFieldRefClick : function(e, field){
         e.preventDefault();

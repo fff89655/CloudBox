@@ -75,10 +75,10 @@
                                v-on:click="onRefClick(obj)">参照</a>
 
                             <a class="w3-button w3-white w3-border w3-border-blue w3-round-large" 
-                                v-bind:href="'../objDef/index.html?objectName=' + obj.name " target="_blank">明細</a>
+                                v-on:click="onDetailClick(obj)" target="_self">明細</a>
                             
                             <a class="w3-button w3-white w3-border w3-border-blue w3-round-large" 
-                                v-bind:href="'../objDef/index.html?objectName=' + obj.name + '&initTab=dataTab'" target="_blank">データ</a>
+                                v-on:click="onDataClick(obj)" target="_self">データ</a>
 
                             <a class="w3-button w3-white w3-border w3-border-blue w3-round-large" 
                                 v-on:click="pickUp(obj)" target="_blank">pick up</a>
@@ -109,9 +109,9 @@
                                     <td>{{f.type}}</td>
                                     <td>{{f.custom}}</td>
                                     <td style="padding:0;">
-                                        <a v-if="f.custom" class="w3-button w3-white w3-border w3-border-blue w3-round-large" 
+                                        <a class="w3-button w3-white w3-border w3-border-blue w3-round-large" 
                                             v-bind:href=" f.customFieldId + '?setupid=CustomObjects'" target="_blank"
-                                            v-on:click="onFieldRefClick(obj, f); return false;">Ref</a>
+                                            v-on:click="onFieldRefClick(obj, f); return false;">参照</a>
                                     </td>
                                 </tr>
                             </table>

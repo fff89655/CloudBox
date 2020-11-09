@@ -6,6 +6,7 @@
     "activeTab",
     "declarativeContent",
     "storage",
+    "unlimitedStorage",
     "cookies",
     "https://*.salesforce.com/*",
     "https://www.google.com/"

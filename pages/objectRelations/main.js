@@ -1,4 +1,7 @@
-SalesforceAPI.login(initData);
+var parentWindow = window.parent;
+var parentLoginInfor = parentWindow.g_getLoginInfor();
+SalesforceAPI.LoginInfors = parentLoginInfor.LoginInfors;
+SalesforceAPI.LoginInfor = parentLoginInfor.LoginInfor;
 
 var appData = { objects: [], pickList: {}, pickVal: [] };
 var v = new Vue({
@@ -50,44 +53,22 @@ var v = new Vue({
             $("#pickModel").show();
         },
         onRefClick: function (obj) {
-            if(obj.custom){
-                var searchName = obj.name.replace("__c","");
-                if(searchName.indexOf("__") != -1){
-                    searchName = searchName.substring(searchName.indexOf("__") + 2 , searchName.length);
-                }
-                
-                SalesforceAPI.requestToolingApi("SELECT Id,DeveloperName FROM CustomObject WHERE DeveloperName='" + searchName + "'" ,function(doc,text){
-                    var s = doc.records[0].Id;
-                    window.open(SalesforceAPI.LoginInfo.domain + s+ "?setupid=CustomObjects");
-                });
-            }else{
-                window.open(SalesforceAPI.LoginInfo.domain + "p/setup/layout/LayoutFieldList?type=" + obj.name);
-    
-            }
+          SalesforceAPI.getObjPageUrl(obj.name,(url)=>{
+            window.open(url);
+          });
+        },
+        onDetailClick : function (obj){
+          var param = `objectName=${obj.name}'`;
+          window.parentWindow.g_openTabFromId('objDef', param);
+        },
+        onDataClick: function (obj) {
+          var param = `objectName=${obj.name}&initTab=dataTab'`;
+          window.parentWindow.g_openTabFromId('objDef', param);
         },
         onFieldRefClick: function (obj, field) {
-
-            var searchName = obj.name.replace("__c", "");
-            if (searchName.indexOf("__")) {
-                searchName = searchName.substring(searchName.indexOf("__") + 2, searchName.length);
-            }
-
-            SalesforceAPI.requestToolingApi("SELECT Id,DeveloperName FROM CustomObject WHERE DeveloperName='" + searchName + "'", function (doc, text) {
-                var objId = $(doc).find("sf\\:Id").html();
-
-                var fieldSearchName = field.name.replace("__c", "");
-                if (fieldSearchName.indexOf("__")) {
-                    fieldSearchName = fieldSearchName.substring(fieldSearchName.indexOf("__") + 2, fieldSearchName.length);
-                }
-    
-                SalesforceAPI.requestToolingApi(`SELECT Id FROM CustomField WHERE TableEnumOrId='${objId}' AND DeveloperName ='${fieldSearchName}'`, function (customFieldDoc, text) { //SELECT Id,DeveloperName,ExternalName FROM CustomObject
-
-                    var objId = $(customFieldDoc).find("sf\\:Id").html();
-
-                    window.open(SalesforceAPI.LoginInfo.domain + objId);
-                });
-            });
-
+          SalesforceAPI.getFieldPageUrl(obj.name, field.name, (url)=>{
+            window.open(url);
+          });
         }
     }
 });
@@ -111,3 +92,4 @@ function initData() {
         appData.objects = list;
     });
 }
+initData();

@@ -20,10 +20,10 @@ Vue.component('obj-ref-btn', {
                 
                 SalesforceAPI.requestToolingApi("SELECT Id,DeveloperName FROM CustomObject WHERE DeveloperName='" + searchName + "'" ,function(doc,text){
                     var s = doc.records[0].Id;
-                    window.open(SalesforceAPI.LoginInfo.domain + s+ "?setupid=CustomObjects");
+                    window.open(SalesforceAPI.LoginInfor.domain + s+ "?setupid=CustomObjects");
                 });
             }else{
-                window.open(SalesforceAPI.LoginInfo.domain + "p/setup/layout/LayoutFieldList?type=" + obj.name);
+                window.open(SalesforceAPI.LoginInfor.domain + "p/setup/layout/LayoutFieldList?type=" + obj.name);
     
             }
         }

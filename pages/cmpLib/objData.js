@@ -155,7 +155,7 @@ Vue.component('obj-datas', {
                 button.html("Ref")
                 button.attr("rId", value);
                 button.click(function(e){
-                    window.open(SalesforceAPI.LoginInfo.domain + $(this).attr("rId"));
+                    window.open(SalesforceAPI.LoginInfor.domain + $(this).attr("rId"));
                     e.preventDefault();
                 });
                 $(td).append(button);

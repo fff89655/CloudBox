@@ -1,20 +1,25 @@
 
-SalesforceAPI.login(init);
-
-function init(){
-    BaseAPI.loadObjMap(function(objMap){
-        appData.objMap = objMap;
-        onLoad();
-    });
-}
-
-function onLoad(){
-    var v = new Vue({
-      el: '#app',
-      data: {appData:appData},
-      methods: {
-      }
-    });
-}
+var parentWindow = window.parent;
+var parentLoginInfor = parentWindow.g_getLoginInfor();
+SalesforceAPI.LoginInfors = parentLoginInfor.LoginInfors;
+SalesforceAPI.LoginInfor = parentLoginInfor.LoginInfor;
 
 var appData = {objMap:[]};
+
+function init(){
+  var v = new Vue({
+    el: '#app',
+    data: {appData:appData},
+    methods: {
+    }
+  });
+}
+
+
+function loadData(){
+  BaseAPI.loadObjMap(function(objMap){
+    appData.objMap = objMap;
+    init();
+  });
+}
+loadData();

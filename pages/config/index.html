@@ -1,0 +1,72 @@
+<html>
+  <head>
+      <meta charset="UTF-8">
+      <title>クイック検索</title>
+      <link rel="stylesheet" href="../../lib/w3.css">
+      <script src="../../lib/jquery.js"></script>
+      <script src="../../lib/vue.js"></script>
+      <script src="../../js/base.js"></script>
+      <script src='../../lib/fontawesome.js'></script>
+
+      <style>
+        *{
+          box-sizing: border-box;
+        }
+        body{
+          padding:0;
+          margin:0;
+        }
+        table{
+          border-collapse: collapse;
+        }
+        table td,table th{
+          text-align: left;
+          border:1px solid gray;
+          padding:5px;
+        }
+        table th{
+          background-color :lightskyblue;
+        }
+      </style>
+  </head>
+  <body>
+    <div id="app" style="position:absolute;top:0;left:0;right:0;bottom:0;padding:10px;">
+      
+      <div>キャッシュデータ</div>
+      <div style="padding:5px;">
+        <button @click="clearAll">Clear All</button>
+      </div>
+      
+      <table>
+        <tr>
+          <th>
+            ドメイン
+          </th>
+          <th>
+            ユーザ名
+          </th>
+          <th>
+            最終取得日時
+          </th>
+          <th>
+          </th>
+        </tr>
+        <tr v-for="cr in cacheDatas">
+          <td>
+            {{cr.domain}}
+          </td>
+          <td>
+            {{cr.userName}}
+          </td>
+          <td>
+            {{cr.lastGetDataTime}}
+          </td>
+          <td>
+            <button @click="getCache(cr)" :disabled="cacheLoading">キャッシュ再取得<i v-if="cacheLoading" class='w3-spin fas	fas fa-sync-alt'></i></button>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <script src="main.js"></script>
+  </body>
+</html>

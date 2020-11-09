@@ -1,0 +1,171 @@
+<html>
+  <head>
+      <meta charset="UTF-8">
+      <title>クイック検索</title>
+      <link rel="stylesheet" href="../../lib/w3.css">
+      <script src="../../lib/jquery.js"></script>
+      <script src="../../lib/vue.js"></script>
+      <script src="../../js/base.js"></script>
+      <script src='../../lib/fontawesome.js'></script>
+
+      <style>
+        *{
+          box-sizing: border-box;
+        }
+        body{
+          padding:0;
+          margin:0;
+        }
+        table{
+          border-collapse: collapse;
+        }
+        table td{
+          padding:0;
+        }
+        iframe{
+          border:0;
+        }
+        .menuDiv{
+          color:#77776e;
+          width:50px;
+          border-left: 4px solid #333;
+        }
+        .menuDiv:hover{
+          background-color: rgb(145, 145, 145);
+          cursor:pointer;
+        }
+        .menuIcon{
+          font-size:28px;
+          width: 28px;
+          margin:7px;
+        }
+        .menuDiv.selected{
+          color: #B9DCFB;
+          fill:#B9DCFB;
+          border-left: 4px solid #B9DCFB;
+        }
+        .tabDiv{
+          color:#77776e;
+          width:30px;
+          float:left;
+          padding-left:5px;
+        }
+        .tabDiv:hover{
+          background-color: rgb(145, 145, 145);
+          cursor:pointer;
+        }
+        .tabIcon{
+          font-size:20px;
+          width: 24px;
+          padding: 2px 0px;
+        }
+        .tabDiv.selected{
+          color: #B9DCFB;
+          fill:#B9DCFB;
+          border-bottom: 2px solid #B9DCFB;
+        }
+        .frameTable td{
+          vertical-align: top;
+        }
+        .logo{
+          float:left;
+          color: #22a6f1; 
+          font-weight: bold;
+          font-size: 24px;
+          height:30px;
+          width:50px;
+          padding-left:2px;
+        }
+        #frameDiv iframe{
+          border:0;
+          width:100%;
+          height:100%;
+        }
+        .tabDiv .fa-scroll{
+          position: relative;
+          left:-3px;
+        }
+        .tabDiv .fa-file-alt{
+          position: relative;
+          left:3px;
+        }
+        .tabMenu{
+          display: none;
+        }
+      </style>
+  </head>
+  <body>
+    <div id="tabMenu" class="w3-dropdown-content w3-bar-block w3-border">
+      <a id="tabMenu_close" href="#" class="w3-bar-item w3-button">Close</a>
+      <a id="tabMenu_closeOther" href="#" class="w3-bar-item w3-button">Close Other</a>
+      <a id="tabMenu_closeAll" href="#" class="w3-bar-item w3-button">Close All</a>
+    </div>
+    <div id="app" style="position:absolute;top:0;left:0;right:0;bottom:0">
+      <table class="frameTable" style="width: 100%;height: 100%;">
+        <tr style="height: 30px;background-color: #3c3c3c;color:#c6c5b3">
+          <td colspan="2">
+            <div class="logo">Cb</div>
+            <div class="w3-dropdown-hover topMenu">
+              <button class="w3-button" style="padding: 3px;">接続:{{loginInfor.userName}}</button>
+              <div class="w3-dropdown-content w3-bar-block w3-card-4">
+                <a v-for="login in loginInfors" href="#" class="w3-bar-item w3-button" @click="onConnectClick($event)" style="white-space: nowrap;">
+                  <i class='fas fa-check' v-if="loginInfor.userName == login.userName"></i>
+                  <span class="loginName">{{login.userName}}</span>
+                </a>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="width: 50px;background-color: #333;">
+            <div id="search" class="menuDiv" v-on:click="onMenuClick($event)">
+              <i class='fas fa-search menuIcon'></i>
+            </div>
+            <div id="data" class="menuDiv" v-on:click="onMenuClick($event)">
+              <i class='fas fa-database menuIcon'></i>
+            </div>
+            <div id="record" class="menuDiv" v-on:click="onMenuClick($event)">
+              <i class='fas fa-file-alt menuIcon' style="font-size: 30px;padding-left:3px;"></i>
+            </div>
+            <div id="sql" class="menuDiv" v-on:click="onMenuClick($event)">
+              <i class='fas fa-scroll menuIcon'></i>
+            </div>
+            <div id="config" class="menuDiv" v-on:click="onMenuClick($event)">
+              <i class='fas fa-tools menuIcon'></i>
+            </div>
+          </td>
+          <td>
+            <table style="width: 100%;height: 100%;">
+              <tr style="height: 26px;">
+                <td id="tabRootDiv" style="width:100%;background-color: #333;border-left:1px solid rgb(83, 83, 83);padding-left:5px;">
+                  <!-- <div class="tabDiv">
+                    <i class='fas fa-search tabIcon'></i>
+                  </div>
+                  <div class="tabDiv selected">
+                    <i class='fas fa-search tabIcon'></i>
+                  </div>
+                  <div class="tabDiv">
+                    <i class='fas fa-database tabIcon'></i>
+                  </div>
+                  <div class="tabDiv">
+                    <i class='fas fa-database tabIcon'></i>
+                  </div>
+                  <div class="tabDiv">
+                    <i class='fas fa-scroll tabIcon'></i>
+                  </div> -->
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div id="frameDiv" style=" overflow: auto; width:100%;height:100%;">
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <script src="main.js"></script>
+  </body>
+</html>
