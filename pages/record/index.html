@@ -127,10 +127,10 @@
         background-color:rgb(216, 142, 44) !important;
       }
 
-      .successPopup{
+      .popupMsg{
         transition: opacity 0.7s;
         z-index: 910;
-        position: absolute;
+        position: fixed;
         top: 100px; 
         width: 80%;
         left:10%;
@@ -141,14 +141,14 @@
   </head>
   <body>
     <div id="app">
-      <div class="successPopup w3-animate-opacity" v-show="appData.successMessage">
+      <div class="popupMsg w3-animate-opacity" v-show="appData.successMessage">
         <div class="w3-container w3-green" style="padding:16px;">
           <h3>Success</h3>
           {{appData.successMessage}}
         </div>
       </div>
       
-      <div class="successPopup w3-animate-opacity" v-show="appData.errMsg">
+      <div class="popupMsg w3-animate-opacity" v-show="appData.errMsg">
         <div class="w3-container w3-orange w3-text-white" style="padding:16px;">
           <h3>Error</h3>
           {{appData.errMsg}}
@@ -160,9 +160,11 @@
         Id : <input class="w3-input w3-border w3-cell" style="width:200px;" type="text" v-model:value="appData.idVal">
         <button class="w3-button w3-light-blue w3-hover-blue w3-cell w3-margin-right" v-on:click="onSearchClick()">search</button>
 
-        <select class="w3-select w3-border w3-cell" style="width:300px" v-model:value="appData.selectObj">
+        Obj : <input class="w3-input w3-border w3-cell" style="width:300px" list="obj-list" v-model:value="appData.selectObj"/>
+        <datalist id="obj-list">
           <option v-bind:value="o.name" v-for="o in appData.objMap">{{o.label}}</option>
-        </select>
+        </datalist>
+
         <button class="w3-button w3-light-blue w3-hover-blue w3-cell w3-margin-right" v-on:click="onCreateClick()">Create</button>
       </div>
       
@@ -225,7 +227,9 @@
                   </div>
                   <div class="file-title-row" dir="rtl">
                     <span v-if="item.formula"><a href="" @click="onFormulaClick(event, item.formula);">数式</a></span>
-                    {{item.type}}
+                    <i v-if="item.type == 'reference' && appData.recordData[item.name]" class='fas fa-external-link-alt' style="cursor: pointer;" 
+                        @click="onRelationClick(event,appData.recordData[item.name])"></i>
+                    <a href="" @click="onTypeClick(event,item)">{{item.type}}</a>
                   </div>
                 </div>
                 <div class="field-data">
@@ -255,7 +259,9 @@
                   </div>
                   <div class="file-title-row" dir="rtl">
                     <span v-if="item.formula"><a href="" @click="onFormulaClick(event, item.formula);">数式</a></span>
-                    {{item.type}}
+                    <i v-if="item.type == 'reference' && appData.recordData[item.name]" class='fas fa-external-link-alt' style="cursor: pointer;" 
+                        @click="onRelationClick(event,appData.recordData[item.name])"></i>
+                    <a href="" @click="onTypeClick(event,item)">{{item.type}}</a>
                   </div>
                 </div>
                 <div class="field-data">
@@ -286,7 +292,9 @@
                   </div>
                   <div class="file-title-row" dir="rtl">
                     <span v-if="item.formula"><a href="" @click="onFormulaClick(event, item.formula);">数式</a></span>
-                    {{item.type}}
+                    <i v-if="item.type == 'reference' && appData.recordData[item.name]" class='fas fa-external-link-alt' style="cursor: pointer;" 
+                        @click="onRelationClick(event,appData.recordData[item.name])"></i>
+                    <a href="" @click="onTypeClick(event,item)">{{item.type}}</a>
                   </div>
                 </div>
                 <div class="field-data">

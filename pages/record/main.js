@@ -170,9 +170,9 @@ var vue = new Vue({
     },
     _getAllItemName : function(objDef){
       var result = [];
-      objDef.fields.forEach(f => {
+      for (const f of objDef.fields) {
         result.push(f.name);
-      });
+      }
       return result;
     },
     _setItemsDef : function(objDef){
@@ -291,6 +291,12 @@ var vue = new Vue({
       e.preventDefault();
       var param = `id=${rid}'`;
       window.parentWindow.g_openTabFromId('record', param);
+    },
+    onTypeClick : function(e, item){
+      e.preventDefault();
+      SalesforceAPI.getFieldPageUrl(appData.objectName, item.name, (url)=>{
+        window.open(url);
+      });
     }
   }
 });

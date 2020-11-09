@@ -66,6 +66,7 @@ function g_openTabFromId(id, param){
   tab.addClass("selected");
   tab.attr("tabId", tabId);
   tab.click(onTabClick);
+  tab.on("auxclick", onTabClick);
   tab.contextmenu(onTabRightClick);
 
   
@@ -81,16 +82,24 @@ function onTabClick(e){
 
   var tabEl = $(e.currentTarget);
 
-  if(tabEl.hasClass("selected")) return;
-
-  $(".tabDiv.selected").removeClass("selected");
-  $(".tabFrame").hide();
-
-  var tabId = tabEl.attr("tabId");
-  var iframeEl = $(`iframe[tabId='${tabId}']`);
+  if(e.which == 2){
+    // middle click
+    rightClickTab = tabEl;
+    onTabMenuCloseClick(e, tabEl);
+  }else{
+    // left click
+    if(tabEl.hasClass("selected")) return;
   
-  tabEl.addClass("selected");
-  iframeEl.show();
+    $(".tabDiv.selected").removeClass("selected");
+    $(".tabFrame").hide();
+  
+    var tabId = tabEl.attr("tabId");
+    var iframeEl = $(`iframe[tabId='${tabId}']`);
+    
+    tabEl.addClass("selected");
+    iframeEl.show();
+  }
+
 }
 
 var rightClickTab = null;
@@ -136,7 +145,7 @@ function hideTabMenu(){
   rightClickTab = null;
 }
 
-function onTabMenuCloseClick(e){
+function onTabMenuCloseClick(e, tabEl){
   var tabEl = rightClickTab;
 
   var nextFocus = null;

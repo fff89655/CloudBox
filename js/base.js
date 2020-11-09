@@ -580,7 +580,7 @@ var SalesforceAPI = (function () {
 
     api.requestToolingApi = function (soql, callBack, errorCallBack) {
         var xhr = new XMLHttpRequest();
-        xhr.open("GET", api.LoginInfor.domain +"services/data/v35.0/tooling/query?q=" + soql.replace(" " + "+"), true);
+        xhr.open("GET", api.LoginInfor.domain +"services/data/v46.0/tooling/query?q=" + soql.replace(" " + "+"), true);
         
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.setRequestHeader("X-PrettyPrint", "1");
@@ -630,7 +630,7 @@ var SalesforceAPI = (function () {
 
     api.requestData = function (soql, callBack, errorCallBack) {
         var xhr = new XMLHttpRequest();
-        xhr.open("GET", api.LoginInfor.domain + "services/data/v43.0/query?q=" + soql.replace(" " + "+"), true);
+        xhr.open("GET", api.LoginInfor.domain + "services/data/v46.0/query?q=" + soql.replace(" " + "+"), true);
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.setRequestHeader("X-PrettyPrint", "1");
         xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfor.sessionId);
@@ -649,7 +649,7 @@ var SalesforceAPI = (function () {
 
     api.requestCreateData = function(objectName, data, callBack, errorCallBack) {
         var xhr = new XMLHttpRequest();
-        xhr.open("POST", api.LoginInfor.domain +`services/data/v43.0/sobjects/${objectName}`, true);
+        xhr.open("POST", api.LoginInfor.domain +`services/data/v46.0/sobjects/${objectName}`, true);
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.setRequestHeader("X-PrettyPrint", "1");
         xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfor.sessionId);
@@ -686,7 +686,7 @@ var SalesforceAPI = (function () {
 
     api.requestSaveData = function (objectName, objectId, data, callBack, errorCallBack) {
         var xhr = new XMLHttpRequest();
-        xhr.open("PATCH", `${api.LoginInfor.domain}services/data/v43.0/sobjects/${objectName}/${objectId}`, true);
+        xhr.open("PATCH", `${api.LoginInfor.domain}services/data/v46.0/sobjects/${objectName}/${objectId}`, true);
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.setRequestHeader("X-PrettyPrint", "1");
         xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfor.sessionId);
@@ -796,7 +796,7 @@ var BaseAPI = (function () {
     }
 
     api.loadObjMap = function (callBack) {
-      var cacheKey = `cache_${SalesforceAPI.userName}`;
+      var cacheKey = `cache_${SalesforceAPI.LoginInfor.userName}`;
       ChromeAPI.getLocalData(cacheKey, function (d) {
         var d = d[cacheKey];
         if (d) {
@@ -808,7 +808,7 @@ var BaseAPI = (function () {
     }
 
     api.getObjDef = function(objName , callBack){
-        SalesforceAPI.requestRESTApi("services/data/v37.0/sobjects/" + objName + "/describe", function (json) {
+        SalesforceAPI.requestRESTApi("services/data/v46.0/sobjects/" + objName + "/describe", function (json) {
             callBack(JSON.parse(json));
         });
     }
@@ -874,7 +874,7 @@ var BaseAPI = (function () {
         r.keyPrefix = obj.keyPrefix;
         r.fields = [];
         r.childRelationships = obj.childRelationships;
-        obj.fields.forEach(f => {
+        for (const f of obj.fields) {
           var ff = {};
           ff.name = f.name;
           ff.label = f.label;
@@ -883,8 +883,18 @@ var BaseAPI = (function () {
           ff.updateable = f.updateable;
           ff.nillable = f.nillable;
           ff.formula = f.calculatedFormula;
+          if(obj.name == 'User'){
+            if(ff.name == 'OfflineTrialExpirationDate' 
+               || ff.name == 'OfflinePdaTrialExpirationDate'
+               || ff.name == 'UserPermissionsMarketingUser'
+               || ff.name == 'UserPermissionsOfflineUser'
+               ){
+              debugger;
+              continue;
+            }
+          }
           r.fields.push(ff);
-        });
+        }
       
         return r;
     }
