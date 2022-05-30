@@ -25,7 +25,7 @@ function init(){
             appData.loginInfor = loginInfor;
             SalesforceAPI.LoginInfor = loginInfor;
             
-            $("#mainFrame")[0].contentWindow.location.reload()
+            onTabMenuCloseAllClick(null);
 
             break;
           }

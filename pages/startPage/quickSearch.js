@@ -18,11 +18,11 @@ var quickSearchTemplate = `
             <label for="fieldChk">Field</label>
         </div>
         <div class="w3-cell w3-padding w3-margin-left">
-            <input id="visualfoceChk" v-model="options.fieldChk" class="w3-check" type="checkbox" v-on:change="onSearchInput()">
+            <input id="visualfoceChk" v-model="options.vsChk" class="w3-check" type="checkbox" v-on:change="onSearchInput()">
             <label for="visualfoceChk">Visualforce Page</label>
         </div>
         <div class="w3-cell w3-padding w3-margin-left">
-            <input id="apexChk" v-model="options.fieldChk" class="w3-check" type="checkbox" v-on:change="onSearchInput()">
+            <input id="apexChk" v-model="options.apexChk" class="w3-check" type="checkbox" v-on:change="onSearchInput()">
             <label for="apexChk">Apex</label>
         </div>
     </div>
@@ -47,20 +47,23 @@ var quickSearchTemplate = `
             <template v-if="r.type=='Field'">
                 <div class="fieldColTitle w3-col w3-padding-small w3-border" style="width:100px">{{r.type}}</div>
 
-                <div class="w3-col w3-padding-small w3-border" style="width:120px;">
+                <div class="w3-col w3-padding-small w3-border" style="width:90px;">
                     <a target="_blank" href="" v-on:click="onFieldRefClick(event, r.target)">項目参照</a>
                 </div>
-                <div class="w3-col w3-padding-small w3-border" style="width:120px;">
+                <div class="w3-col w3-padding-small w3-border" style="width:80px;">
                     <a target="_blank" href="" v-on:click="onObjRefClick(event, r.target.object)">OBJ参照</a>
                 </div>
-                <div class="w3-col w3-padding-small w3-border" style="width:120px;">
+                <div class="w3-col w3-padding-small w3-border" style="width:60px;">
                     <a v-on:click="onDefClick(event, r.target.object)" href="/">定義</a>
                 </div>
-                <div class="w3-col w3-padding-small w3-border" style="width:100px;">
+                <div class="w3-col w3-padding-small w3-border" style="width:80px;">
                     <a v-on:click="onDataClick(event, r.target.object)" href="/">データ</a>
                 </div>
-                <div class="w3-col s3 w3-padding-small w3-border">{{r.target.objectLabel}} -> {{r.target.ref.label}}</div>
+                <div class="w3-col w3-padding-small w3-border" style="width:160px;">
+                    <a v-on:click="onDataTypeClick(event, r)" href="/">{{r.dataType}}</a>
+                </div>
                 <div class="w3-col s3 w3-padding-small w3-border">{{r.target.objectName}}.{{r.target.ref.name}}</div>
+                <div class="w3-col s3 w3-padding-small w3-border">{{r.target.objectLabel}} -> {{r.target.ref.label}}</div>
                 <div class="w3-rest w3-padding-small w3-border" v-html="r.txt"></div>
             </template>
         </div>
@@ -129,8 +132,12 @@ Vue.component('quick-search', {
                   var t1 = target.searchKey.substring(0,r.index);
                   var t2 = r[0];
                   var t3 = target.searchKey.substring(r.index + r[0].length , target.searchKey.length);
-                  var txt = `${t1}<span class="hightLight">${t2}</span>${t3}`
-                  searchResult.push({target:target, txt:txt, type:target.type});
+                  var txt = `${t1}<span class="hightLight">${t2}</span>${t3}`;
+                  var dataType = target.ref.type;
+                  if(target.ref.formula){
+                    dataType = `数式（${target.ref.type}）`;
+                  }
+                  searchResult.push({target:target, txt:txt, type:target.type, dataType:dataType});
                   return;
               }
           });
@@ -160,6 +167,10 @@ Vue.component('quick-search', {
         SalesforceAPI.getFieldPageUrl(field.object.name, field.ref.name, url=>{
           window.open(url);
         });
+      },
+      onDataTypeClick : function(e, r){
+       e.preventDefault();
+       alert(r.target.ref.formula);
       }
     }
 })

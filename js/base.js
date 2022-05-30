@@ -889,7 +889,6 @@ var BaseAPI = (function () {
                || ff.name == 'UserPermissionsMarketingUser'
                || ff.name == 'UserPermissionsOfflineUser'
                ){
-              debugger;
               continue;
             }
           }

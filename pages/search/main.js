@@ -1,38 +1,77 @@
-var loginInfo = {};
 
+var parentWindow = window.parent;
+var parentLoginInfor = parentWindow.g_getLoginInfor();
+SalesforceAPI.LoginInfors = parentLoginInfor.LoginInfors;
+SalesforceAPI.LoginInfor = parentLoginInfor.LoginInfor;
+
+
+var appData = {datas:[], selectItems:[], tooltipList:null};
 var objMap = null;
+var allTooltip = [];
+
+function init(){
+  var v = new Vue({
+    el: '#app',
+    data: {appData:appData},
+    methods: {
+        search:function(){
+          searchDatas();
+        },
+        tooltipItemClick : function(obj){
+            editor.insert(obj.name);
+            $(".tooltipDiv").hide();
+        }
+    }
+  });
+  editorInit();
+}
+
+
+function loadData(){
+  BaseAPI.loadObjMap(function(objMapP){
+    appData.objMap = objMapP;
+    objMap = objMapP;
+    allTooltip = Object.values(getToolTipObjAndField(objMapP))
+    appData.tooltipList = allTooltip;
+    // searchDatas();
+
+    init();
+  });
+}
+loadData();
+
 
 var tooltipMap = null;
 
-var allTooltip = [];
 
-$(function(){
-  login(function(sessionId, domain, loginDoc){
-    loginInfo.sessionId = sessionId;
-    loginInfo.loginDoc = loginDoc;
-    loginInfo.domain = domain;
-    appData.loginInfo = loginInfo;
+// $(function(){
+//   login(function(sessionId, domain, loginDoc){
+//     loginInfo.sessionId = sessionId;
+//     loginInfo.loginDoc = loginDoc;
+//     loginInfo.domain = domain;
+//     appData.loginInfo = loginInfo;
 
 
-    getLocalData("objMap",function(d){
-        if(d.objMap){
-            objMap = d.objMap;
-            allTooltip = Object.values(getToolTipObjAndField(d.objMap))
-            appData.tooltipList = allTooltip;
-        }else{
-            refreshLocalObjects()
-        }
-    });
+//     getLocalData("objMap",function(d){
+//         if(d.objMap){
+//             objMap = d.objMap;
+//             allTooltip = Object.values(getToolTipObjAndField(d.objMap))
+//             appData.tooltipList = allTooltip;
+//         }else{
+//             refreshLocalObjects()
+//         }
+//     });
 
-    searchDatas();
-  });
-})
+//     searchDatas();
+//   });
+// })
 
 
 function searchDatas(){
     var sql = editor.getValue();
     var selectItems = [];
-    requestData(sql , function(r){
+    
+    SalesforceAPI.requestData(sql , function(r){
         appData.datas = r.records;
 
     });
@@ -42,21 +81,6 @@ function searchDatas(){
     selectItems = r[1].replace(/\s+/g, '').split(",");
     appData.selectItems = selectItems;
 }
-
-var appData = {datas:[], selectItems:[], tooltipList:null};
-var v = new Vue({
-  el: '#app',
-  data: {appData:appData},
-  methods: {
-      search:function(){
-        searchDatas();
-      },
-      tooltipItemClick : function(obj){
-          editor.insert(obj.name);
-          $(".tooltipDiv").hide();
-      }
-  }
-});
 
 function fileterTooltip(text){
     if(text){
@@ -173,10 +197,34 @@ function setTooltipPosition(top, left){
     $(".tooltipDiv").css("left", left + "px");
 }
 
-
-var editor = ace.edit("editor");
-editor.setTheme("ace/theme/chrome");
-editor.session.setMode("ace/mode/sql");
+var editor;
+editorInit = function(){
+ editor = ace.edit("editor");
+ editor.setTheme("ace/theme/chrome");
+ editor.session.setMode("ace/mode/sql");
+ 
+ //https://www.kancloud.cn/zhongxia/fe_interview/214226
+ editor.on("change", function(e){
+  var reg = /\s+/;
+  if(e.lines.length == 1){
+      if(reg.test(e.lines[0])){
+          showToolTip()
+      }else{
+          if($(".tooltipDiv").is(":visible")){
+              var reg = /\S+$/;
+              var cursorPos = editor.getCursorPosition();
+              var rowText = editor.session.getLine(cursorPos.row);
+              var textBeforeEdit = rowText.substring(0, cursorPos.column) + e.lines.join("");
+              var xxx = reg.exec(textBeforeEdit);
+              if(xxx){
+                  console.log(xxx[0]);
+                  fileterTooltip(xxx[0]);
+              }
+          }
+      }
+  }
+ })
+}
 
 editorKeyDown = function(e){
 
@@ -219,25 +267,3 @@ editorKeyDown = function(e){
         }
     }
 }
-
-//https://www.kancloud.cn/zhongxia/fe_interview/214226
-editor.on("change", function(e){
-    var reg = /\s+/;
-    if(e.lines.length == 1){
-        if(reg.test(e.lines[0])){
-            showToolTip()
-        }else{
-            if($(".tooltipDiv").is(":visible")){
-                var reg = /\S+$/;
-                var cursorPos = editor.getCursorPosition();
-                var rowText = editor.session.getLine(cursorPos.row);
-                var textBeforeEdit = rowText.substring(0, cursorPos.column) + e.lines.join("");
-                var xxx = reg.exec(textBeforeEdit);
-                if(xxx){
-                    console.log(xxx[0]);
-                    fileterTooltip(xxx[0]);
-                }
-            }
-        }
-    }
-})
