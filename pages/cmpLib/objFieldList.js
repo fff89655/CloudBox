@@ -4,52 +4,9 @@ var template = `
     <table class="w3-table-all w3-dataHeader">
     </table>
 </div>
-<div class="scrollDiv" style="height:calc(100% - 42px);overflow-x:scroll;" v-on:scroll="onscroll(event)">
-    <table class="w3-table-all w3-dataBody">
-        <tr class="w3-dataHeaderTr">
-            <th>
-                <div></div>
-            </th>
-            <th>
-                <div>
-                    Name
-                </div>
-            </th>
-            <th>
-                <div>
-                    Label
-                </div>
-            </th>
-            <th>
-                <div>
-                    Type
-                </div>
-            </th>
-            <th>
-                <div>
-                    isCustom
-                </div>
-            </th>
-            <th>
-                <div>
-                </div>
-            </th>
-            <!--<th style="width:17px;background:#f1f1f1;"></th>-->
-        </tr>
-        <tr v-for="(f,index) in object.fields">
-            <td>
-                <i class="material-icons w3-large font-Marina" title="Item">featured_play_list</i>
-                {{index+1}}
-            </td>
-            <td>{{f.name}}</td>
-            <td>{{f.label}}</td>
-            <td>{{f.type}}</td>
-            <td>{{f.custom}}</td>
-            <td style="padding:0;">
-                <a class="w3-button w3-white w3-border w3-border-blue w3-round-large" href="" @click.prevent="onRefClick(f)" target="_blank">参照</a>
-            </td>
-        </tr>
-    </table>
+<div class="scrollDiv" style="height:calc(100%);overflow-x:scroll;">
+    <div id="fieldList"></div>
+    <div style="display:none;">{{object.name}}</div>
 </div>
 </div>
 `;
@@ -60,48 +17,67 @@ Vue.component('obj-field-list', {
     data: function(){
         return {};
     },
-    created: function () {
+    mounted: function () {
     },
     updated: function () {
-
-        var scrollDiv =  $(this.$el).find(".scrollDiv")[0];
-        if(scrollDiv.scrollHeight <= scrollDiv.clientHeight){
-            return;
+        let datas = [];
+        for(let f of this.object.fields){
+            datas.push({Name:f.name,Label:f.label,Type:f.type,isCustom:f.custom,ref:''});
         }
-
-        var headerTr = $(this.$el).find(".w3-dataHeaderTr");
-        var newHeaderTr = headerTr.clone();
-        var tds = headerTr.children();
-        var newTds = newHeaderTr.children();
-        for (let i = 0; i < newTds.length; i++) {
-            const t = tds.eq(i).children().eq(0);
-            const nt = newTds.eq(i).children().eq(0);
-            nt.css("width", t[0].offsetWidth + "px");
+        
+        function editedRender(instance, td, row, col, prop, value, cellProperties) {
+            Handsontable.renderers.TextRenderer.apply(this, arguments);
         }
+        
+        Handsontable.renderers.registerRenderer('editedRender', editedRender);
 
-        var scrollOffsetTd = $("<th><div style='width:17px'></div></th>");
-        newHeaderTr.append(scrollOffsetTd);
+        var objName = this.object.name;
+        var actionColRenderer = function (instance, td, row, col, prop, value, cellProperties) {
+            var button = $('<a href="">');
+            button.html("Ref")
+            //button.attr("objName", objName);
+            button.attr("fieldName", value);
+            button.click(function(e){
+                SalesforceAPI.getFieldPageUrl(objName, $(this).attr("fieldName"), url => {
+                    window.open(url);
+                  });
+                e.preventDefault();
+            });
+            $(td).empty().append(button);
+        };
+        
+        new Handsontable($("#fieldList")[0], {
+            data: datas,
+            columns: [{data:'Name'},
+                      {data:'Name'},
+                      {data:'Label'},
+                      {data:'Type'},
+                      {data:'isCustom'}],
+            rowHeaders: true,
+            colHeaders: ['ref','Name','Label','Type','isCustom'],
+            columnSorting: true,
+            cells: function (row, col) {
+                var cellProperties = {};
 
-        var headerTable = $(this.$el).find(".w3-dataHeader");
-        headerTable.append(newHeaderTr);
+                if(col == 0){
+                    cellProperties.renderer = actionColRenderer;
+                }else{
+                    cellProperties.renderer = editedRender;
+                }
 
-        scrollDiv.scrollTop = 40;
+                return cellProperties;
+            },
+            //columnHeaderHeight: 60,
+            manualRowResize: true,
+            //rowHeights: 35,
+            filters: true,
+            //readOnly: true,
+            dropdownMenu: true
+        });
+        
     },
     methods: {
         onscroll : function(e){
-            $(this.$el).find(".fixHeaderDiv")[0].scrollLeft = e.target.scrollLeft;
-            if(e.target.scrollTop < 40){
-                e.target.scrollTop = 40;
-                e.preventDefault();
-            }
-        },
-        onRefClick : function(f){
-            var objRef = null;
-            var objName = this.object.name;
-            var fieldName = f.name;
-            SalesforceAPI.getFieldPageUrl(objName, fieldName, url => {
-              window.open(url);
-            });
         }
     }
 })

@@ -112,6 +112,7 @@ function searchDatas(){
             columns: columns,
             rowHeaders: true,
             colHeaders:colHeaders,
+            columnSorting: true,
             //columnHeaderHeight: 60,
             manualRowResize: true,
             //rowHeights: 35,

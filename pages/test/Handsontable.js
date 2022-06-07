@@ -31,6 +31,7 @@ function init(){
                               {data:'Name'}],
                     rowHeaders: true,
                     colHeaders: ['Id','Name'],
+                    columnSorting: true,
                     //columnHeaderHeight: 60,
                     manualRowResize: true,
                     //rowHeights: 35,
