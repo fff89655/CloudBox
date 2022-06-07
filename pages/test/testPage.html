@@ -7,13 +7,32 @@
         <script src="../../lib/vue.js"></script>
         <script src="../../js/base.js"></script>
 
-        <link rel="stylesheet" href="quickSearch.css">
         <script src="testPage.js" ></script>
         <style>
         </style>
     </head>
     <body>
         <div id="app">
+          <table class="w3-table-all w3-hoverable">
+              <thead>
+              <tr class="w3-light-blue">
+                  <th >
+                      Id
+                  </th>
+                  <th >
+                      Name
+                  </th>
+              </tr>
+              </thead>
+              <tr v-for="d in appData.datas">
+                <td >
+                    {{d.Id}}
+                </td>
+                <td >
+                    {{d.Name}}
+                </td>
+              </tr>
+          </table>
         </div>
     </body>
 </html>

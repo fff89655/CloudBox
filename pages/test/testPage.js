@@ -1,16 +1,26 @@
+SalesforceAPI.login(init);
 
-function searchSessionIdCookie(callback, errorCallback){
-    chrome.cookies.getAll({}, function(cookies) {
-        cookies.forEach(cookie => {
-            if(cookie.domain.endsWith("salesforce.com")
-               && cookie.name == "sid"){
-                   document.write(cookie.value)
-                   callback(cookie);
-                   return;
-               }
-        });
-        if(errorCallback){
-            errorCallback("not found");
-        }
-    });
+var appData = {};
+
+function init(){
+  
+  appData.loginInfors = SalesforceAPI.LoginInfors;
+  appData.loginInfor = SalesforceAPI.LoginInfor;
+
+  SalesforceAPI.requestData('SELECT Id,Name FROM User' , function(r){
+   let datas = [];
+   for(let row of r.records){
+    datas.push({Id:row.Id,
+                Name:row.Name});
+   }
+   appData.datas = datas;
+
+   var vue = new Vue({
+     el: '#app',
+     data: appData,
+     methods: {}
+   });
+  });
+
+
 }

@@ -66,20 +66,60 @@ var tooltipMap = null;
 //   });
 // })
 
-
+var dataGrid = null;
 function searchDatas(){
     var sql = editor.getValue();
     var selectItems = [];
     
-    SalesforceAPI.requestData(sql , function(r){
-        appData.datas = r.records;
+    var reg = /select\s+(.+)\sfrom\s+(.+)/is
+    var r = reg.exec(sql);
+    selectItems = r[1].replace(/\s+/gs, '').split(",");
+    appData.selectItems = selectItems;
 
+    SalesforceAPI.requestData(sql , function(r){
+        let datas = [];
+        for(let rec of r.records){
+            let row = {};
+            for(let item of appData.selectItems){
+                let ps = item.split('.');
+                if(ps.length==1){
+                row[item] = rec[item];
+                }else{
+                let v = rec;
+                for(let pro of ps){
+                if(!v) continue;
+                v=v[pro];
+                }
+                row[item] = v;
+                }
+            }
+            datas.push(row);
+        }
+        appData.datas = datas;
+
+        if(dataGrid != null) dataGrid.destroy();
+
+        let colHeaders = [];
+        let columns = [];
+        for (const colHeader of selectItems) {
+            colHeaders.push(colHeader);
+            columns.push({data:colHeader});
+        }
+
+        dataGrid = 
+        new Handsontable($("#dataGrid")[0], {
+            data: appData.datas,
+            columns: columns,
+            rowHeaders: true,
+            colHeaders:colHeaders,
+            //columnHeaderHeight: 60,
+            manualRowResize: true,
+            //rowHeights: 35,
+            filters: true,
+            dropdownMenu: true
+        });
     });
 
-    var reg = /select\s+(.+)\sfrom\s+(.+)/i
-    var r = reg.exec(sql);
-    selectItems = r[1].replace(/\s+/g, '').split(",");
-    appData.selectItems = selectItems;
 }
 
 function fileterTooltip(text){
@@ -204,26 +244,26 @@ editorInit = function(){
  editor.session.setMode("ace/mode/sql");
  
  //https://www.kancloud.cn/zhongxia/fe_interview/214226
- editor.on("change", function(e){
-  var reg = /\s+/;
-  if(e.lines.length == 1){
-      if(reg.test(e.lines[0])){
-          showToolTip()
-      }else{
-          if($(".tooltipDiv").is(":visible")){
-              var reg = /\S+$/;
-              var cursorPos = editor.getCursorPosition();
-              var rowText = editor.session.getLine(cursorPos.row);
-              var textBeforeEdit = rowText.substring(0, cursorPos.column) + e.lines.join("");
-              var xxx = reg.exec(textBeforeEdit);
-              if(xxx){
-                  console.log(xxx[0]);
-                  fileterTooltip(xxx[0]);
-              }
-          }
-      }
-  }
- })
+ // editor.on("change", function(e){
+ //  var reg = /\s+/;
+ //  if(e.lines.length == 1){
+ //      if(reg.test(e.lines[0])){
+ //          showToolTip()
+ //      }else{
+ //          if($(".tooltipDiv").is(":visible")){
+ //              var reg = /\S+$/;
+ //              var cursorPos = editor.getCursorPosition();
+ //              var rowText = editor.session.getLine(cursorPos.row);
+ //              var textBeforeEdit = rowText.substring(0, cursorPos.column) + e.lines.join("");
+ //              var xxx = reg.exec(textBeforeEdit);
+ //              if(xxx){
+ //                  console.log(xxx[0]);
+ //                  fileterTooltip(xxx[0]);
+ //              }
+ //          }
+ //      }
+ //  }
+ // })
 }
 
 editorKeyDown = function(e){

@@ -164,6 +164,7 @@ var SalesforceAPI = (function () {
       var loginInfors = [];
       cookies.forEach(cookie => {
         var loginInfor = {};
+        if(cookie.domain.startsWith('.')) return;
         loginInfor.domain = "https://" + cookie.domain + "/";
         loginInfor.sessionId = cookie.value;
         loginInfors.push(loginInfor);
@@ -630,7 +631,8 @@ var SalesforceAPI = (function () {
 
     api.requestData = function (soql, callBack, errorCallBack) {
         var xhr = new XMLHttpRequest();
-        xhr.open("GET", api.LoginInfor.domain + "services/data/v46.0/query?q=" + soql.replace(" " + "+"), true);
+        let sql = encodeURI(soql.replace(/\s+/gs , "+"));
+        xhr.open("GET", api.LoginInfor.domain + "services/data/v46.0/query?q=" + sql, true);
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.setRequestHeader("X-PrettyPrint", "1");
         xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfor.sessionId);
