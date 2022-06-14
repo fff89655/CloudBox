@@ -199,7 +199,6 @@ Vue.component('obj-datas', {
                     for (let i = 0; i < changes.length; i++) {
                         const change = changes[i];
                         //row, prop, oldValue, newValue
-                        debugger;
                         var rowFirstCell = table.getCell(change[0], table.headerMap[change[1]] + 1);
                         $(rowFirstCell).attr("edited", true);
                     }

@@ -17,6 +17,9 @@ function init(){
         search:function(){
           searchDatas();
         },
+        save:function(){
+          saveDatas();
+        },
         tooltipItemClick : function(obj){
             editor.insert(obj.name);
             $(".tooltipDiv").hide();
@@ -78,22 +81,26 @@ function searchDatas(){
 
     SalesforceAPI.requestData(sql , function(r){
         let datas = [];
+        let objectName = null;
         for(let rec of r.records){
             let row = {};
             for(let item of appData.selectItems){
                 let ps = item.split('.');
                 if(ps.length==1){
-                row[item] = rec[item];
+                    row[item] = rec[item];
                 }else{
-                let v = rec;
-                for(let pro of ps){
-                if(!v) continue;
-                v=v[pro];
-                }
-                row[item] = v;
+                    let v = rec;
+                    for(let pro of ps){
+                        if(!v) continue;
+                        v=v[pro];
+                    }
+                    row[item] = v;
                 }
             }
             datas.push(row);
+            if(objectName == null){
+                objectName = rec.attributes.type;
+            }
         }
         appData.datas = datas;
 
@@ -101,9 +108,13 @@ function searchDatas(){
 
         let colHeaders = [];
         let columns = [];
+        let i = 0;
+        var headerMap = {};
         for (const colHeader of selectItems) {
             colHeaders.push(colHeader);
             columns.push({data:colHeader});
+            headerMap[colHeader] = i;
+            i++;
         }
 
         dataGrid = 
@@ -117,10 +128,75 @@ function searchDatas(){
             manualRowResize: true,
             //rowHeights: 35,
             filters: true,
-            dropdownMenu: true
+            dropdownMenu: true,
+            afterChange: function (changes) {
+                if (!changes) return;
+                var table = this;
+                for (let i = 0; i < changes.length; i++) {
+                    const change = changes[i];
+                    //row, prop, oldValue, newValue
+                    var rowFirstCell = table.getCell(change[0], table.headerMap[change[1]]);
+                    $(rowFirstCell).attr("edited", true);
+                    $(rowFirstCell).closest("tr").attr("edited", true);
+                }
+            }
         });
+        dataGrid.headerMap = headerMap;
+        dataGrid.objectName = objectName;
     });
 
+}
+
+function saveDatas(){
+    if(dataGrid.headerMap["Id"] == undefined){
+        alert("No Id Column.");
+        return;
+    }
+    if(dataGrid.objectName == null){
+        return;
+    }
+    let editedRows = $("tr[edited]");
+    let editRowIndesList = [];
+    let updateRecList = [];
+    for(let i=0 ; i<editedRows.length; i++){
+        let rowCell = editedRows[i];
+        let rowIndex = $(rowCell).prevAll().length;
+        let rec = {};
+        let editedCells = $(rowCell).find("td[edited]");
+        for(let j=0 ; j<editedCells.length ; j++){
+            let cell = editedCells[j];
+            let cellColIndex = $(cell).prevAll().length - 1;
+            let colHeader = dataGrid.getColHeader(cellColIndex);
+            let data = dataGrid.getDataAtCell(rowIndex, cellColIndex);
+            rec[colHeader] = data;
+        }
+        rec.Id = dataGrid.getDataAtCell(rowIndex, dataGrid.headerMap["Id"]);
+        updateRecList.push(rec);
+    }
+    debugger;
+    saveToSalesforce(updateRecList);
+}
+
+async function saveToSalesforce(updateRecList){
+    let errMsg = [];
+    for(let updateRec of updateRecList){
+        let Id = updateRec.Id;
+        delete updateRec.Id;
+        let result = await SalesforceAPI.requestSaveDataSync(dataGrid.objectName, Id, JSON.stringify(updateRec));
+        if(result != "success"){
+            errMsg.push(result);
+        }
+    }
+    if(errMsg.length > 0){
+        alert(errMsg);
+    }else{
+        alert("保存成功。");
+        clearEdited();
+    }
+}
+
+function clearEdited(){
+    $("[edited]").removeAttr('edited');
 }
 
 function fileterTooltip(text){
