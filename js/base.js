@@ -629,6 +629,25 @@ var SalesforceAPI = (function () {
         // xhr.send(sendStr);
     }
 
+    api.requestRecord = function (objName, id, fields, callBack, errorCallBack) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", api.LoginInfor.domain + `services/data/v46.0/sobjects/${objName}/${id}?fields=${fields.join(',')}`, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.setRequestHeader("X-PrettyPrint", "1");
+        xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfor.sessionId);
+
+        xhr.onload = function () {
+            if (xhr.status == 200) {
+                callBack(JSON.parse(xhr.responseText));
+            } else {
+                if (errorCallBack) {
+                    errorCallBack(JSON.parse(xhr.responseText));
+                }
+            }
+        }
+        xhr.send();
+    }
+
     api.requestData = function (soql, callBack, errorCallBack) {
         var xhr = new XMLHttpRequest();
         let sql = encodeURI(soql.replace(/\s+/gs , "+"));
