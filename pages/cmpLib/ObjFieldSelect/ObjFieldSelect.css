@@ -1,0 +1,35 @@
+.obj-field-select{
+    border-collapse: collapse;
+    font-size:12px;
+    background:white;
+}
+.obj-field-select>tr>td{
+    border:none;
+}
+.obj-field-select .label{
+}
+.obj-field-select .hide{
+    display:none;
+}
+.obj-field-select .highlight{
+    background-color: #4787f0;
+    color:white;
+}
+.obj-field-select .unSelected-field,.obj-field-select .selected-field{
+    overflow: auto;
+    border:1px solid black;
+    width:250px;
+    white-space: nowrap;
+}
+.obj-field-select .unSelected-field>div,.obj-field-select .selected-field>div{
+    padding:3px 7px;
+    border-top:1px solid lightgray;
+}
+.btn-td>button{
+    display:block;
+    width:90%;
+    height:30px;
+    margin-left: 5%;
+    margin-top:5px;
+    text-align: center;
+}

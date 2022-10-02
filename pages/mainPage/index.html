@@ -66,6 +66,7 @@
         }
         .frameTable td{
           vertical-align: top;
+          border:none;
         }
         .logo{
           float:left;
@@ -91,6 +92,9 @@
         }
         .tabMenu{
           display: none;
+        }
+        .pagetable>tr>td{
+            border:none;
         }
       </style>
   </head>
@@ -135,9 +139,9 @@
             </div>
           </td>
           <td>
-            <table style="width: 100%;height: 100%;">
+            <table class="pagetable" style="width: 100%;height: 100%;">
               <tr style="height: 26px;">
-                <td id="tabRootDiv" style="width:100%;background-color: #333;border-left:1px solid rgb(83, 83, 83);padding-left:5px;">
+                <td id="tabRootDiv" style="width:100%;background-color: #333;padding-left:5px;">
                   <!-- <div class="tabDiv">
                     <i class='fas fa-search tabIcon'></i>
                   </div>

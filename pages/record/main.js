@@ -71,10 +71,10 @@ var vue = new Vue({
       
       this._setItemsDef(obj);
 
-      var soql = `SELECT ${this._getAllItemName(obj).join(",")} FROM ${appData.objectName} WHERE Id='${appData.idVal}'`;
+      //var soql = `SELECT ${this._getAllItemName(obj).join(",")} FROM ${appData.objectName} WHERE Id='${appData.idVal}'`;
 
       var me = this;
-      debugger;
+      
       SalesforceAPI.requestRecord(appData.objectName, appData.idVal, this._getAllItemName(obj) ,function(r){
         appData.recordData = r;
 

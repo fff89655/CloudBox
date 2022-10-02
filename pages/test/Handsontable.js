@@ -34,6 +34,7 @@ function init(){
                     columnSorting: true,
                     //columnHeaderHeight: 60,
                     manualRowResize: true,
+                    manualColumnResize: true,
                     //rowHeights: 35,
                     filters: true,
                     dropdownMenu: true

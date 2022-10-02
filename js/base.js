@@ -920,6 +920,9 @@ var BaseAPI = (function () {
           ff.label = f.label;
           ff.custom = f.custom;
           ff.type = f.type;
+          if(f.type=="reference"){
+            ff.referenceTo = f.referenceTo[0];
+          }
           ff.updateable = f.updateable;
           ff.nillable = f.nillable;
           ff.formula = f.calculatedFormula;
@@ -941,6 +944,126 @@ var BaseAPI = (function () {
     return api;
 
 })();
+
+
+var SQLWrapper = function(sql){
+    this.sql = sql;
+    this.objName = null;
+    this.labelSql = null;
+    this.analysis();
+}
+SQLWrapper.prototype.analysis = function(){
+    let sqlValue = this.sql.replace("\n"," ");
+    let fromReg = /from\s+(\S+)/gi;
+    let fromMatch = fromReg.exec(sqlValue);
+    if(fromMatch.length > 1){
+        this.objName = fromMatch[1];
+    }
+    //let items = (/SELECT\s+(.|\n+)\s+FROM\s+(.|\n+).+/gi).exec(sqlValue)[1];
+}
+SQLWrapper.prototype.getSelectItemList = function(){
+    let sqlValue = this.sql.replace("\n"," ");
+    let items = (/SELECT\s+(.+)\s+FROM.+/gi).exec(sqlValue)[1];
+    if(!items || items.length<2){
+        return [];
+    }else{
+        return items.replaceAll(/\s+/gi,"").split(",");
+    }
+}
+SQLWrapper.prototype.translate = function(objMap){
+    let transMap = this.preparTransInfo(objMap);
+    let words = this.getTransWords();
+    for(let word of words){
+        let ts = word.word.split(".");
+        if(ts.length==1){
+            let labels = transMap.get(word.word);
+            if(word.word=="Website"){
+                debugger;
+            }
+            console.log(word.word);
+            if(labels){
+                if(Array.isArray(labels)){
+                    for(let label of labels){
+                        if(label.objName == this.objName){
+                            word.label = label.label;
+                            break;
+                        }
+                    }
+                }else{
+                    if(labels.objName == this.objName){
+                        word.label = labels.label;
+                    }
+                }
+            }
+        }else{
+            let labels = [];
+            let objList = [objMap[this.objName]];
+            for(let i=0 ; i<ts.length-1 ; i++){
+                let fieldName = ts[i].replaceAll("__r","__c");
+                for(let field of objList[objList.length-1].fields){
+                    if(field.name == fieldName){
+                        objList.push(objMap[field.referenceTo]);
+                    }
+                }
+            }
+            for(let i=0 ; i<ts.length ; i++){
+                let apiName = ts[i].replaceAll("__r","__c");
+                let obj = objList[i];
+                debugger;
+                for(let field of obj.fields){
+                    if(field.name == apiName){
+                        labels.push(field.label);
+                    }
+                }
+            }
+            if(ts.length == labels.length){
+                word.label = labels.join(".");
+                debugger;
+            }
+        }
+    }
+    let sqlValue = this.sql;
+    for(let word of words){
+        if(word.label){
+            sqlValue = sqlValue.replace(word.word, word.label);
+        }
+    }
+    return sqlValue;
+}
+SQLWrapper.prototype.getTransWords = function(){
+    let valueReg = /[a-zA-Z_0-9\$\.]+/gi
+    let words = [];
+    let r = valueReg.exec(this.sql);
+    while (r != null){
+        words.push({word:r[0], index:r.index});
+        r = valueReg.exec(this.sql);
+    }
+    return words;
+}
+SQLWrapper.prototype.preparTransInfo = function(objMap){
+    // key:apiname, value:{label:xxx,objName:xxx}
+    let transMap = new Map();
+    for(const objName in objMap){
+        let obj = objMap[objName];
+        for(const field of obj.fields){
+            if(transMap.has(field.name)){
+                let v = transMap.get(field.name);
+                if(Array.isArray(v)){
+                    v.push({label:field.label,objName:obj.name});
+                }else{
+                    let newV = [];
+                    newV.push(v);
+                    newV.push({label:field.label,objName:obj.name});
+                    transMap.set(field.name, newV);
+                }
+            }else{
+                transMap.set(field.name, {label:field.label,objName:obj.name});
+            }
+        }
+    }
+    return transMap;
+}
+
 
 
 
