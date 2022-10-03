@@ -1,0 +1,29 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>クイック検索</title>
+        <link rel="stylesheet" href="/lib/w3.css">
+        <script src="/lib/jquery.js"></script>
+        <script src="/lib/vue.js"></script>
+        <script src="/js/base.js"></script>
+
+        <script src="/pages/cmpLib/Combobox/Combobox.js" ></script>
+        
+        <link rel="stylesheet" href="/pages/cmpLib/Combobox/Combobox.css">
+        
+    </head>
+    <body>
+        <div id="app">
+            <div>
+                only value:<combobox v-bind:items="items"></combobox>
+            </div>
+            <dvi>
+                value and label:<combobox v-bind:items="items2" ></combobox>
+            </dvi>
+            <dvi>
+                salesforce account field:<combobox v-bind:items="items3" ></combobox>
+            </dvi>
+        </div>
+        <script src="testCombobox.js" ></script>
+    </body>
+</html>

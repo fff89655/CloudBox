@@ -6,6 +6,10 @@
     <script src="../../lib/vue.js"></script>
     <script src="../../js/base.js"></script>
     <script src='../../lib/fontawesome.js'></script>
+
+    <script src="../cmpLib/Combobox/Combobox.js" ></script>
+    <link rel="stylesheet" href="../cmpLib/Combobox/Combobox.css">
+
     <style>
       *{
         font-family: 'Open Sans',Meiryo,'メイリオ',Arial,sans-serif;
@@ -160,10 +164,7 @@
         Id : <input class="w3-input w3-border w3-cell" style="width:200px;" type="text" v-model:value="appData.idVal">
         <button class="w3-button w3-light-blue w3-hover-blue w3-cell w3-margin-right" v-on:click="onSearchClick()">search</button>
 
-        Obj : <input class="w3-input w3-border w3-cell" style="width:300px" list="obj-list" v-model:value="appData.selectObj"/>
-        <datalist id="obj-list">
-          <option v-bind:value="o.name" v-for="o in appData.objMap">{{o.label}}</option>
-        </datalist>
+        Obj : <combobox v-bind:items="appData.objItems" v-model="appData.selectObj"></combobox>
 
         <button class="w3-button w3-light-blue w3-hover-blue w3-cell w3-margin-right" v-on:click="onCreateClick()">Create</button>
       </div>

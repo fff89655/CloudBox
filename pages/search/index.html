@@ -12,6 +12,9 @@
         <script src="../cmpLib/ObjFieldSelect/ObjFieldSelect.js" ></script>
         <link rel="stylesheet" href="../cmpLib/ObjFieldSelect/ObjFieldSelect.css">
 
+        <script src="../cmpLib/Combobox/Combobox.js" ></script>
+        <link rel="stylesheet" href="../cmpLib/Combobox/Combobox.css">
+
         <link rel="stylesheet" href="../../lib/handsontable.full.min.css">
         <script src="../../lib/handsontable.full.min.js"></script>
 
@@ -67,11 +70,7 @@
             <div class="fieldSelect" :class="fieldSelect.show?'':'hide'">
                 <div>
                     <button @click="fieldSelectOK">search</button>
-                    
-                    <input id="objSelect" class="w3-input w3-border w3-cell" style="width:300px" list="obj-list" v-on:change="objSelect"/>
-                    <datalist id="obj-list">
-                        <option v-bind:value="o.name" v-for="o in objMap">{{o.label}}</option>
-                    </datalist>
+                    object:<combobox  v-bind:items="objItems" @onchange="objSelect"></combobox>
                 </div>
                 <div style="padding-top: 6px;">
                     <component ref="fieldSelect" v-bind:is="fieldSelect.cmpName" v-bind="fieldSelect.fieldSelectProp"></component>

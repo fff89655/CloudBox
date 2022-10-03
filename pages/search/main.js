@@ -5,11 +5,12 @@ SalesforceAPI.LoginInfors = parentLoginInfor.LoginInfors;
 SalesforceAPI.LoginInfor = parentLoginInfor.LoginInfor;
 
 
-var appData = {datas:[], selectItems:[], input:{objName:null}, searchObj:null,
+var appData = {datas:[], selectItems:[], input:{objName:null}, searchObj:null, objItems:[],
                 fieldSelect:{cmpName:null, show:false, fieldSelectProp:{object:null,selectedFieldNames:null,width:800,height:500}}};
 var objMap = null;
 
 function init(){
+  initFieldItems();
   var v = new Vue({
     el: '#app',
     data: appData,
@@ -20,9 +21,8 @@ function init(){
         save:function(){
           saveDatas();
         },
-        objSelect:function(){
-            
-            let input = $("#objSelect").val();
+        objSelect:function(val){
+            let input = val;
 
             for (const objApiName in appData.objMap) {
                 if(input == objApiName){                    
@@ -74,6 +74,14 @@ function loadData(){
   });
 }
 loadData();
+
+function initFieldItems(){
+    let objItems = [];
+    for(let objName in objMap){
+        objItems.push({value:objName, label:objMap[objName].label});
+    }
+    appData.objItems = objItems;
+}
 
 
 var dataGrid = null;

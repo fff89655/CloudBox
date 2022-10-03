@@ -14,6 +14,11 @@ function init(){
 
         appData.objMap = objMap;
 
+        let objItems = [];
+        for(let objName in objMap){
+            objItems.push({value:objName, label:objMap[objName].label});
+        }
+        appData.objItems = objItems;
             
         var url = new URL(window.location.href);
         var id = url.searchParams.get("id");
@@ -53,7 +58,8 @@ var appData = { idVal: "",
                 selectObj:null ,
                 errMsg:null,
                 successMessage:null,
-                reference:[]};
+                reference:[],
+                objItems:[]};
 
 var vue = new Vue({
   el: '#app',
@@ -154,7 +160,7 @@ var vue = new Vue({
             });
         }
     },
-    onCreateClick : function(){
+    onCreateClick : function(){debugger;
         if(appData.selectObj && appData.objMap[appData.selectObj]){
                 
             appData.objectName = appData.selectObj;
