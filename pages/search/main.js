@@ -1,4 +1,3 @@
-
 var parentWindow = window.parent;
 var parentLoginInfor = parentWindow.g_getLoginInfor();
 SalesforceAPI.LoginInfors = parentLoginInfor.LoginInfors;
@@ -6,7 +5,9 @@ SalesforceAPI.LoginInfor = parentLoginInfor.LoginInfor;
 
 
 var appData = {datas:[], selectItems:[], input:{objName:null}, searchObj:null, objItems:[],
-                fieldSelect:{cmpName:null, show:false, fieldSelectProp:{object:null,selectedFieldNames:null,width:800,height:500}}};
+               fieldSelect:{cmpName:null, show:false, fieldSelectProp:{object:null,selectedFieldNames:null,width:800,height:500},},
+               upsert:{show:false}
+              };
 var objMap = null;
 
 function init(){
@@ -58,6 +59,12 @@ function init(){
         },
         downloadCSVClick:function(){
             searchDatas("csv");
+        },
+        upsertCSVClick:function(){
+            appData.upsert.show = true;
+        },
+        onUpsertCancle:function(){
+            appData.upsert.show = false;
         }
     }
   });
@@ -190,14 +197,16 @@ function downloadCSV(colHeaders, datas){
     }
 
     for(let row of csvDatas){
-        result.push("\"=\"\"" + row.join("\"\"\",\"=\"\"") + "\"\"\"")
-        //result.push("\"" + row.join("\",\"") + "\"")
+        //result.push("\"=\"\"" + row.join("\"\"\",\"=\"\"") + "\"\"\"")
+        result.push("\"" + row.join("\",\"") + "\"")
     }
     let csvStr = result.join("\r\n");
 
-    let bolbCSV = new Uint8Array( Encoding.convert(new Encoding.stringToCode(csvStr), 'SJIS'));
+    //let bolbCSV = new Uint8Array( Encoding.convert(new Encoding.stringToCode(csvStr), 'SJIS'));
+    //let blob = new Blob([bolbCSV],{type:"text/csv"});
 
-    let blob = new Blob([bolbCSV],{type:"text/csv"});
+    let blob = new Blob([csvStr],{type:"text/csv"});
+
     let link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download ="tempdate.csv";

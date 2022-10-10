@@ -1,0 +1,20 @@
+
+.upsert-panel{
+    font-size:12px;
+    background:white;
+}
+.upsert-panel .highlight{
+    background-color: #4787f0;
+    color:white;
+}
+.upsert-panel .fields{
+    overflow: auto;
+    border:1px solid black;
+    width:250px;
+    white-space: nowrap;
+}
+.upsert-panel .fields>div{
+    padding:3px 7px;
+    border-top:1px solid lightgray;
+    cursor: pointer;
+}

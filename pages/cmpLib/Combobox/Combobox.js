@@ -124,8 +124,8 @@ Vue.component('combobox', {
             this.val = val;
             this.$refs.input.value = this.val;
             this.value = val;
-            this.$emit('onchange', val);
             this.$emit('input', val);
+            this.$emit('onchange', val);
         },
         showItems:function(){
             this.showDropdown = true;

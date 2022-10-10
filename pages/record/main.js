@@ -136,7 +136,7 @@ var vue = new Vue({
               appData.errMsg = JSON.stringify(r) ;
               setTimeout(() => {
                 appData.errMsg = null;
-              }, 8000);
+              }, 1000);
             });
         }else{
             SalesforceAPI.requestCreateData(appData.selectObj, JSON.stringify(appData.recordData) ,function(r){
@@ -156,7 +156,7 @@ var vue = new Vue({
                 appData.errMsg = JSON.stringify(r) ;
                 setTimeout(() => {
                   appData.errMsg = null;
-                }, 8000);
+                }, 1000);
             });
         }
     },

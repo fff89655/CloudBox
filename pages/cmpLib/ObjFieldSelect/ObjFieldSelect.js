@@ -67,7 +67,7 @@ Vue.component('obj-field-select', {
             }
             this.clearHighLight();
         },
-        display:function(type){
+        display:function(type){debugger;
             for(field of this.unSelectedFields){
                 if(type=="all"){
                     field.display = true;
@@ -126,6 +126,8 @@ Vue.component('obj-field-select', {
                 if(field.display){
                     selectedFields.push(field);
                     field.highlight = false;
+                }else{
+                    unSelectedFields.push(field);
                 }
             }
             this.unSelectedFields = unSelectedFields;

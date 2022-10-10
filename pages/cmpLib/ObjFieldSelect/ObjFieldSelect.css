@@ -24,6 +24,7 @@
 .obj-field-select .unSelected-field>div,.obj-field-select .selected-field>div{
     padding:3px 7px;
     border-top:1px solid lightgray;
+    cursor: pointer;
 }
 .btn-td>button{
     display:block;

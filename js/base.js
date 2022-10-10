@@ -676,13 +676,32 @@ var SalesforceAPI = (function () {
         xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfor.sessionId);
     
         xhr.onload = function () {
-        if (xhr.status == 201 || xhr.status == 204) {
-            callBack(JSON.parse(xhr.responseText));
-        } else {
-            errorCallBack(JSON.parse(xhr.responseText));
-        }
+            if (xhr.status == 201 || xhr.status == 204) {
+                callBack(JSON.parse(xhr.responseText));
+            } else {
+                errorCallBack(JSON.parse(xhr.responseText));
+            }
         }
         xhr.send(data);
+    }
+
+    api.requestCreateDataSync = function (objectName, data) {
+        return new Promise((resolve) => {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", api.LoginInfor.domain +`services/data/v46.0/sobjects/${objectName}`, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("X-PrettyPrint", "1");
+            xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfor.sessionId);
+    
+            xhr.onload = function () {
+                if (xhr.status == 200 || xhr.status == 204) {
+                    resolve('success'); 
+                } else {
+                    resolve('error:' + xhr.responseText); 
+                }
+            }
+            xhr.send(data);
+        });
     }
 
     api.requestRESTApi = function (url, callBack, errorCallBack) {
@@ -1021,6 +1040,7 @@ SQLWrapper.prototype.translate = function(objMap){
                 debugger;
             }
         }
+        
     }
     let sqlValue = this.sql;
     for(let word of words){
@@ -1028,6 +1048,7 @@ SQLWrapper.prototype.translate = function(objMap){
             sqlValue = sqlValue.replace(word.word, word.label);
         }
     }
+    sqlValue = sqlValue.replaceAll(this.objName, objMap[this.objName].label);
     return sqlValue;
 }
 SQLWrapper.prototype.getTransWords = function(){
