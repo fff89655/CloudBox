@@ -1,16 +1,24 @@
 var template = `
 <div class="combobox" style="display:inline-block">
-    <input ref="input"
+    <input type="text" ref="input"
       @input="onInput" @keydown="onKeyDown($event)" @focus="onFocus" @focusout="onFocusout"/>
-    
-    <div ref="dropdownDiv" v-show="showDropdown" class="selectItems">
-        <table>
-            <tr v-for="item of itemDatas" v-show="item.show" :class="{highlight:item.highlight}"
-              @mousedown="onItemClick(item)">
-                <td>{{item.value}}</td>
-                <td v-if="showLabels_v">{{item.label}}</td>
+    <img class="pulldownicon" src="/imgs/pulldown.svg" @click="iconClick" />
+    <div class="dropdownDiv" v-show="showDropdown">
+        <table class="headerTable">
+            <tr>
+                <td :style="{width:header0Width+'px'}">api Name</td>
+                <td v-if="showLabels_v">Label</td>
             </tr>
         </table>
+        <div ref="dropdownDiv" class="selectItems">
+            <table class="cbDataTable">
+                <tr v-for="item of itemDatas" v-show="item.show" :class="{highlight:item.highlight}"
+                  @mousedown="onItemClick(item)">
+                    <td>{{item.value}}</td>
+                    <td v-if="showLabels_v">{{item.label}}</td>
+                </tr>
+            </table>
+        </div>
     </div>
 </div>
 `;
@@ -18,7 +26,7 @@ Vue.component('combobox', {
     props: ["items", "showLabels", "value"],
     template: template,
     data: function () {
-        return { val:"", itemDatas:[] , showLabels_v:false, showDropdown:false, highlightIndex:null};
+        return { val:"", itemDatas:[] , showLabels_v:false, showDropdown:false, highlightIndex:null,header0Width:100};
     },
     created: function () {
         if(!this.items)return;
@@ -128,11 +136,21 @@ Vue.component('combobox', {
             this.$emit('onchange', val);
         },
         showItems:function(){
+            this.computeHeaderWidth();
             this.showDropdown = true;
         },
         hideItems:function(){
             this.showDropdown = false;
             this.highlightIndex = null;
+        },
+        iconClick:function(){
+            this.$refs.input.focus();
+        },
+        computeHeaderWidth(){
+            let me = this;
+            setTimeout(function(){
+                me.header0Width = me.$refs.dropdownDiv.querySelectorAll("tr:first-child")[0].children[0].offsetWidth;
+            },0);
         }
     }
 })

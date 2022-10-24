@@ -1,0 +1,24 @@
+*{
+    font-family: 'Open Sans',Meiryo,'メイリオ',Arial,sans-serif;
+}
+body{
+    background-color: #ededed;
+}
+button{
+    background-color: #0075f5;
+    color:white;
+    cursor: pointer;
+    padding:4px 18px;
+    font-weight: 600;
+    font-size:1.1em;
+    border:1px solid #CCC;
+    border-radius: 5px;
+    height:36px;
+}
+button:hover{
+    background-color: #0468d3;
+}
+input[type=text]{
+    height:36px;
+    border:2px solid #0075f5;
+}

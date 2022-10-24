@@ -945,6 +945,11 @@ var BaseAPI = (function () {
           ff.updateable = f.updateable;
           ff.nillable = f.nillable;
           ff.formula = f.calculatedFormula;
+          if(f.nillable && f.updateable){
+            ff.mustInput = true;
+          }else{
+            ff.mustInput = false;
+          }
           if(obj.name == 'User'){
             if(ff.name == 'OfflineTrialExpirationDate' 
                || ff.name == 'OfflinePdaTrialExpirationDate'

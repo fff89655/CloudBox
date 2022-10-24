@@ -10,6 +10,8 @@
         <script src="../../lib/ace/ace.js" type="text/javascript" charset="utf-8"></script>
         <script src="../../lib/jquery-csv.js" type="text/javascript"></script>
 
+        <link rel="stylesheet" href="/r/base.css">
+
         <script src="../cmpLib/ObjFieldSelect/ObjFieldSelect.js" ></script>
         <link rel="stylesheet" href="../cmpLib/ObjFieldSelect/ObjFieldSelect.css">
 
@@ -47,12 +49,12 @@
             <table style="width:100%;height:100%;">
                 <tr>
                     <td style="height:50px;">
-                        <button class="w3-button w3-white w3-border w3-border-blue" v-on:click="search">search</button>
-                        <button class="w3-button w3-white w3-border w3-border-blue" v-on:click="save">save</button>
-                        <button class="w3-button w3-white w3-border w3-border-blue" v-on:click="createSql">createSql</button>
-                        <button class="w3-button w3-white w3-border w3-border-blue" v-on:click="showAsLabel">label</button>
-                        <button class="w3-button w3-white w3-border w3-border-blue" v-on:click="downloadCSVClick">exportCSV</button>
-                        <button class="w3-button w3-white w3-border w3-border-blue" v-on:click="upsertCSVClick">upsertCSV</button>
+                        <button v-on:click="search">search</button>
+                        <button v-on:click="save">save</button>
+                        <button v-on:click="createSql">createSql</button>
+                        <button v-on:click="showAsLabel">label</button>
+                        <button v-on:click="downloadCSVClick">exportCSV</button>
+                        <button v-on:click="upsertCSVClick">upsertCSV</button>
                     </td>
                 </tr>
                 <tr>
