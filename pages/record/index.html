@@ -7,140 +7,16 @@
     <script src="../../js/base.js"></script>
     <script src='../../lib/fontawesome.js'></script>
 
+    <link rel="stylesheet" href="/r/base.css">
+
+    <link rel="stylesheet" href="main.css">
+
     <script src="../cmpLib/Combobox/Combobox.js" ></script>
     <link rel="stylesheet" href="../cmpLib/Combobox/Combobox.css">
 
+    <script src="../cmpLib/CheckGroup/CheckGroup.js" ></script>
+    <link rel="stylesheet" href="../cmpLib/CheckGroup/CheckGroup.css">
     <style>
-      *{
-        font-family: 'Open Sans',Meiryo,'メイリオ',Arial,sans-serif;
-        box-sizing: border-box;
-      }
-      .w3-select {
-        padding: 6px 0;
-      }
-      .field .w3-input {
-        padding: 5px;
-      }
-      input:disabled {
-        background-color:rgb(202, 202, 202);
-      }
-
-      .w3-check, .w3-radio {
-        position: static;
-      }
-      
-      td{
-        vertical-align: middle;
-      }
-       
-      .editOver::after{
-        content: url(../../imgs/changed.svg);
-        position: absolute;
-        width:28px;
-        height:28px;
-        right:4px;
-        top:2px;
-      } 
-      
-      .topDiv{
-        position: fixed;
-        left:0;
-        right:0;
-        top:0;
-        z-index: 900;
-        height:62px;
-        background-color: white;
-        padding:16px;
-      }
-
-      .titleDiv{
-        position: fixed;
-        left:0;
-        right:0;
-        top:62px;
-        z-index: 900;
-        background-color: white;
-        padding:8px;
-      }
-      
-      .fieldsDiv{
-        margin-top:124px;
-      }
-
-      .recordObj{
-        font-size: 1.3em;
-        line-height: 26px;
-        float: left;
-        margin-left:13px;
-        padding-top: 9px;
-      }
-      .recordTitle{
-        font-size: 1.3em;
-        line-height: 26px;
-        float: left;
-        margin-left:20px;
-        padding-top: 9px;
-      }
-      .field{
-        float:left;
-        width:100%;
-        border:1px solid black;
-      }
-      .field-def{
-        border-bottom: 1px solid black;
-        padding:5px;
-        font-weight:600;
-      }
-      .field-data{
-        height:34px;
-        position: relative;
-      }
-      .field-data input[type='text']{
-        width:100%;
-      }
-      .fieldDiv{
-        float:left;
-        padding:4px;
-      }
-      .field-width{
-        width:346px;
-      }
-      .file-title-row{
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        overflow: hidden;
-        width:100%;
-      }
-
-      .subTitle{
-        background-color:dodgerblue;
-        color:white;
-        padding:3px 15px;
-        border-radius: 20px;
-        margin-bottom:10px;
-      }
-
-      .relationItem{
-        border:1px solid black;
-        margin:5px 0;
-        padding: 5px 15px;
-        border-radius: 5px;
-      }
-
-      .notnull{
-        background-color:rgb(216, 142, 44) !important;
-      }
-
-      .popupMsg{
-        transition: opacity 0.7s;
-        z-index: 910;
-        position: fixed;
-        top: 100px; 
-        width: 80%;
-        left:10%;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-      }
-      
     </style>
   </head>
   <body>
@@ -161,12 +37,12 @@
 
       <div class="topDiv">
 
-        Id : <input class="w3-input w3-border w3-cell" style="width:200px;" type="text" v-model:value="appData.idVal">
-        <button class="w3-button w3-light-blue w3-hover-blue w3-cell w3-margin-right" v-on:click="onSearchClick()">search</button>
+        Id : <input style="width:200px;" type="text" v-model:value="appData.idVal">
+        <button v-on:click="onSearchClick()">search</button>
 
         Obj : <combobox v-bind:items="appData.objItems" v-model="appData.selectObj"></combobox>
 
-        <button class="w3-button w3-light-blue w3-hover-blue w3-cell w3-margin-right" v-on:click="onCreateClick()">Create</button>
+        <button v-on:click="onCreateClick()">Create</button>
       </div>
       
       <div class="w3-container titleDiv" v-if="appData.recordData != null">
@@ -174,16 +50,26 @@
           <img src="../../imgs/pc.svg" style="height:60px;"/>
         </div>
         <div class="recordObj">
-          
           <span style="color:rgb(156, 156, 156)">{{appData.objectName}}</span>
           <br />
           <span style="font-size: 1.5em;font-weight: bold;">{{appData.objectLabel}}</span>
-          
         </div>
         <div class="recordTitle">
           <span style="color:rgb(156, 156, 156)">{{appData.recordData.Id}}</span>
           <br />
           <span style="font-size: 1.5em;font-weight: bold;">{{appData.recordData.Name}}</span>
+        </div>
+        <div class="titleBtns" style="padding-top: 15px;">
+            <div style="float:left;margin:0 20px;">
+                <check-group :items="['string','double','boolean','picklist','datetime','reference']"
+                    @onchange="onShowTypeChange"></check-group>
+            </div>
+            <div style="float:left;">
+                <check-group :items="['not null']" @onchange="onNotNullChange"></check-group>
+            </div>
+            <div style="float:left;margin-left:20px;">
+                <input type="text" @change="onFilterChange($event)"></input>
+            </div>
         </div>
         <div class="w3-right">
           <button class="w3-button w3-light-blue w3-hover-blue w3-cell" v-on:click="onObjClick()">Obj定義</button>
@@ -217,97 +103,99 @@
           </div>
 
           <div class="w3-col w3-left field-width">
-            <div v-for="item in appData.selectStandardItems" class="fieldDiv field-width" >
+            <div>標準項目</div>
+            <div v-for="item in appData.selectStandardItems" v-show="item.show" class="fieldDiv field-width" >
               <div class="field">
-                <div class="field-def w3-display-container w3-blue" v-bind:class="{ notnull: !item.nillable }">
+                <div class="field-def w3-display-container w3-blue" v-bind:class="{ notnull: !item.field.nillable }">
                   <div class="file-title-row">
-                    {{item.label}}
+                    {{item.field.label}}
                   </div>
                   <div class="file-title-row">
-                    {{item.name}}
+                    {{item.field.name}}
                   </div>
                   <div class="file-title-row" dir="rtl">
-                    <span v-if="item.formula"><a href="" @click="onFormulaClick(event, item.formula);">数式</a></span>
-                    <i v-if="item.type == 'reference' && appData.recordData[item.name]" class='fas fa-external-link-alt' style="cursor: pointer;" 
-                        @click="onRelationClick(event,appData.recordData[item.name])"></i>
-                    <a href="" @click="onTypeClick(event,item)">{{item.type}}</a>
+                    <span v-if="item.field.formula"><a href="" @click="onFormulaClick(event, item.field.formula);">数式</a></span>
+                    <i v-if="item.field.type == 'reference' && appData.recordData[item.field.name]" class='fas fa-external-link-alt' style="cursor: pointer;" 
+                        @click="onRelationClick(event,appData.recordData[item.field.name])"></i>
+                    <a href="" @click="onTypeClick(event,item)">{{item.field.type}}</a>
                   </div>
                 </div>
                 <div class="field-data">
-                  <input v-if="item.type == 'boolean'" class="w3-check" type="checkbox" checked="checked" style="margin:4px"
-                  v-model:value="appData.recordData[item.name]" 
-                  v-on:change="onValueChange(event, item.name)"
-                  :disabled="!item.updateable">
+                  <input v-if="item.field.type == 'boolean'" class="w3-check" type="checkbox" checked="checked" style="margin:4px"
+                  v-model:value="appData.recordData[item.field.name]" 
+                  v-on:change="onValueChange(event, item.field.name)"
+                  :disabled="!item.field.updateable">
           
-                  <input v-if="item.type != 'boolean'" class="w3-input w3-border w3-cell" type="text"
-                    v-model:value="appData.recordData[item.name]" 
-                    :disabled="!item.updateable"
-                    v-on:change="onValueChange(event, item.name)">
+                  <input v-if="item.field.type != 'boolean'" class="w3-input w3-border w3-cell" type="text"
+                    v-model:value="appData.recordData[item.field.name]" 
+                    :disabled="!item.field.updateable"
+                    v-on:change="onValueChange(event, item.field.name)">
                 </div>
               </div>
             </div>
           </div>
 
           <div class="w3-col w3-left field-width">
-            <div v-for="item in appData.selectReadOnlyItems" class="fieldDiv field-width" >
+            <div>Readonly項目</div>
+            <div v-for="item in appData.selectReadOnlyItems" v-show="item.show" class="fieldDiv field-width" >
               <div class="field">
-                <div class="field-def w3-display-container w3-blue" v-bind:class="{ notnull: !item.nillable }">
+                <div class="field-def w3-display-container w3-blue" v-bind:class="{ notnull: !item.field.nillable }">
                   <div class="file-title-row">
-                    {{item.label}}
+                    {{item.field.label}}
                   </div>
                   <div class="file-title-row">
-                    {{item.name}}
+                    {{item.field.name}}
                   </div>
                   <div class="file-title-row" dir="rtl">
-                    <span v-if="item.formula"><a href="" @click="onFormulaClick(event, item.formula);">数式</a></span>
-                    <i v-if="item.type == 'reference' && appData.recordData[item.name]" class='fas fa-external-link-alt' style="cursor: pointer;" 
-                        @click="onRelationClick(event,appData.recordData[item.name])"></i>
-                    <a href="" @click="onTypeClick(event,item)">{{item.type}}</a>
+                    <span v-if="item.field.formula"><a href="" @click="onFormulaClick(event, item.field.formula);">数式</a></span>
+                    <i v-if="item.field.type == 'reference' && appData.recordData[item.field.name]" class='fas fa-external-link-alt' style="cursor: pointer;" 
+                        @click="onRelationClick(event,appData.recordData[item.field.name])"></i>
+                    <a href="" @click="onTypeClick(event,item)">{{item.field.type}}</a>
                   </div>
                 </div>
                 <div class="field-data">
-                  <input v-if="item.type == 'boolean'" class="w3-check" type="checkbox" checked="checked" style="margin:4px"
-                  v-model:value="appData.recordData[item.name]" 
-                  v-on:change="onValueChange(event, item.name)"
-                  :disabled="!item.updateable">
+                  <input v-if="item.field.type == 'boolean'" class="w3-check" type="checkbox" checked="checked" style="margin:4px"
+                  v-model:value="appData.recordData[item.field.name]" 
+                  v-on:change="onValueChange(event, item.field.name)"
+                  :disabled="!item.field.updateable">
           
-                  <input v-if="item.type != 'boolean'" class="w3-input w3-border w3-cell" type="text"
-                    v-model:value="appData.recordData[item.name]" 
-                    :disabled="!item.updateable"
-                    v-on:change="onValueChange(event, item.name)">
+                  <input v-if="item.field.type != 'boolean'" class="w3-input w3-border w3-cell" type="text"
+                    v-model:value="appData.recordData[item.field.name]" 
+                    :disabled="!item.field.updateable"
+                    v-on:change="onValueChange(event, item.field.name)">
                 </div>
               </div>
             </div>
           </div>
 
           <div class="w3-rest">
-
-            <div v-for="item in appData.selectItems" class="fieldDiv field-width" >
+            <div>カスタム変更可項目</div>
+            <div v-for="item in appData.selectItems" v-show="item.show" class="fieldDiv field-width" >
               <div class="field">
-                <div class="field-def w3-display-container w3-blue" v-bind:class="{ notnull: !item.nillable }">
+                <div class="field-def w3-display-container w3-blue" v-bind:class="{ notnull: !item.field.nillable }">
                   <div class="file-title-row">
-                    {{item.label}}
+                    {{item.field.label}}
                   </div>
                   <div class="file-title-row">
-                    {{item.name}}
+                    {{item.field.name}}
                   </div>
                   <div class="file-title-row" dir="rtl">
-                    <span v-if="item.formula"><a href="" @click="onFormulaClick(event, item.formula);">数式</a></span>
-                    <i v-if="item.type == 'reference' && appData.recordData[item.name]" class='fas fa-external-link-alt' style="cursor: pointer;" 
-                        @click="onRelationClick(event,appData.recordData[item.name])"></i>
-                    <a href="" @click="onTypeClick(event,item)">{{item.type}}</a>
+                    <span v-if="item.field.formula"><a href="" @click="onFormulaClick(event, item.field.formula);">数式</a></span>
+                    <i v-if="item.field.type == 'reference' && appData.recordData[item.field.name]" class='fas fa-external-link-alt' style="cursor: pointer;" 
+                        @click="onRelationClick(event,appData.recordData[item.field.name])"></i>
+                    <a href="" @click="onTypeClick(event,item)">{{item.field.type}}</a>
                   </div>
                 </div>
                 <div class="field-data">
-                  <input v-if="item.type == 'boolean'" class="w3-check" type="checkbox" checked="checked" style="margin:4px"
-                  v-model:value="appData.recordData[item.name]" 
-                  v-on:change="onValueChange(event, item.name)"
-                  :disabled="!item.updateable">
+                  <input v-if="item.field.type == 'boolean'" class="w3-check" type="checkbox" checked="checked" style="margin:4px"
+                  v-model:value="appData.recordData[item.field.name]" 
+                  v-on:change="onValueChange(event, item.field.name)"
+                  :disabled="!item.field.updateable">
           
-                  <input v-if="item.type != 'boolean'" class="w3-input w3-border w3-cell" type="text"
-                    v-model:value="appData.recordData[item.name]" 
-                    :disabled="!item.updateable"
-                    v-on:change="onValueChange(event, item.name)">
+                  <input v-if="item.field.type != 'boolean'" class="w3-input w3-border w3-cell" type="text"
+                    v-model:value="appData.recordData[item.field.name]" 
+                    :disabled="!item.field.updateable"
+                    v-on:change="onValueChange(event, item.field.name)">
                 </div>
               </div>
             </div>

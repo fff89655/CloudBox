@@ -160,7 +160,7 @@ var vue = new Vue({
             });
         }
     },
-    onCreateClick : function(){debugger;
+    onCreateClick : function(){
         if(appData.selectObj && appData.objMap[appData.selectObj]){
                 
             appData.objectName = appData.selectObj;
@@ -193,12 +193,12 @@ var vue = new Vue({
 
       objDef.fields.forEach(f => {
         if(STANDARD_ITEMS.includes(f.name)){
-          selectStandardItems[f.name] = f;
+          selectStandardItems[f.name] = {field:f, show:true};
         }else{
           if(f.updateable){
-            selectItems[f.name] = f;
+            selectItems[f.name] = {field:f, show:true};
           }else{
-            selectReadOnlyItems[f.name] = f;
+            selectReadOnlyItems[f.name] = {field:f, show:true};
           }
         }
       });
@@ -206,7 +206,7 @@ var vue = new Vue({
       selectItems = Object.values(selectItems);
           
       selectItems.sort(function(a, b){
-        if(a.label.length <= b.label.length){
+        if(a.field.label.length <= b.field.label.length){
           return -1;
         }else{
           return 1;
@@ -216,7 +216,7 @@ var vue = new Vue({
       selectReadOnlyItems = Object.values(selectReadOnlyItems);
       
       selectReadOnlyItems.sort(function(a, b){
-        if(a.label.length <= b.label.length){
+        if(a.field.label.length <= b.field.label.length){
           return -1;
         }else{
           return 1;
@@ -240,13 +240,13 @@ var vue = new Vue({
         
         var updateObj = {};
         appData.selectItems.forEach(item => {
-            if(item.updateable){
-                updateObj[item.name] = appData.recordData[item.name];
+            if(item.field.updateable){
+                updateObj[item.field.name] = appData.recordData[item.field.name];
             }
         });
         appData.selectStandardItems.forEach(item => {
-            if(item.updateable){
-                updateObj[item.name] = appData.recordData[item.name];
+            if(item.field.updateable){
+                updateObj[item.field.name] = appData.recordData[item.field.name];
             }
         });
         
@@ -299,9 +299,61 @@ var vue = new Vue({
     },
     onTypeClick : function(e, item){
       e.preventDefault();
-      SalesforceAPI.getFieldPageUrl(appData.objectName, item.name, (url)=>{
+      SalesforceAPI.getFieldPageUrl(appData.objectName, item.field.name, (url)=>{
         window.open(url);
       });
+    },
+    onShowTypeChange(val){
+        let all = [];
+        all.push(...appData.selectItems);
+        all.push(...appData.selectStandardItems);
+        all.push(...appData.selectReadOnlyItems);
+        let types = val.split(",");
+        for(let item of all){
+            if(!val){
+                item.show = true;
+                continue;
+            }
+            if(types.indexOf(item.field.type) >= 0){
+                item.show = true;
+            }else{
+                item.show = false;
+            }
+        }
+    },
+    onNotNullChange(val){
+        let all = [];
+        all.push(...appData.selectItems);
+        all.push(...appData.selectStandardItems);
+        all.push(...appData.selectReadOnlyItems);
+        if(val == "not null"){
+            for(let item of all){
+                if(appData.recordData[item.field.name]){
+                    item.show = true;
+                }else{
+                    item.show = false;
+                }
+            }
+        }else{
+            for(let item of all){
+                item.show = true;
+            }
+        }
+    },
+    onFilterChange(e){
+        let v = e.target.value;
+        let reg = new RegExp(v);
+        let all = [];
+        all.push(...appData.selectItems);
+        all.push(...appData.selectStandardItems);
+        all.push(...appData.selectReadOnlyItems);
+        for(let item of all){
+            if(reg.test(item.field.name)){
+                item.show = true;
+            }else{
+                item.show = false;
+            }
+        }
     }
   }
 });

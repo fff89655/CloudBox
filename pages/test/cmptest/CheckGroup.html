@@ -1,0 +1,25 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>クイック検索</title>
+        <link rel="stylesheet" href="/lib/w3.css">
+        <script src="/lib/jquery.js"></script>
+        <script src="/lib/vue.js"></script>
+        <script src="/js/base.js"></script>
+
+        <script src="/pages/cmpLib/CheckGroup/CheckGroup.js" ></script>
+        
+        <link rel="stylesheet" href="/pages/cmpLib/CheckGroup/CheckGroup.css">
+        
+    </head>
+    <body>
+        <div id="app" style="padding: 20px;">
+            <check-group :items="['aaa','bbb','ccc','ddd']"></check-group>
+            <br />
+            <check-group :items="['aaa','bbb','ccc','ddd']" :multiselect="true" v-model="cv" @onchange="onCheckChange"></check-group>
+            <br />
+            <check-group :items="['aaa']"></check-group>
+        </div>
+        <script src="CheckGroup.js" ></script>
+    </body>
+</html>
