@@ -24,6 +24,10 @@
         <link rel="stylesheet" href="../../lib/handsontable.full.min.css">
         <script src="../../lib/handsontable.full.min.js"></script>
 
+        <script src="/js/Matrix.js" ></script>
+        <script src="/pages/cmpLib/Matrix/Matrix.js" ></script>
+        <link rel="stylesheet" href="/pages/cmpLib/Matrix/Matrix.css">
+
         <!-- Shift-JIS encoder -->
         <script src="../../lib/encoding.js"></script>
 
@@ -73,10 +77,10 @@
                 </tr>
                 <tr>
                     <td>
-                        <div style="width:100vw;height:100%;overflow:auto;">
-                            <div id="dataGrid">
-
+                        <div ref="matrixParent" style="width:100vw;height:100%;overflow:auto;">
+                            <div id="dataGrid" style="display: none;">
                             </div>
+                            <matrix ref="matrix"></matrix>
                         </div>
                     </td>
                 </tr>

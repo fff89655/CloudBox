@@ -6,7 +6,8 @@ SalesforceAPI.LoginInfor = parentLoginInfor.LoginInfor;
 
 var appData = {datas:[], selectItems:[], input:{objName:null}, searchObj:null, objItems:[],
                fieldSelect:{cmpName:null, show:false, fieldSelectProp:{object:null,selectedFieldNames:null,width:800,height:500},},
-               upsert:{show:false}
+               upsert:{show:false},
+               matrix:{width:0, height:0}
               };
 var objMap = null;
 
@@ -17,10 +18,45 @@ function init(){
     data: appData,
     methods: {
         search:function(){
-          searchDatas("table");
+          this.searchDatas("table");
         },
         save:function(){
-          saveDatas();
+            if(!window.dataObjName){
+                alert("no search data.");
+                return;
+            }
+            let editedRows = this.$refs.matrix.getEditedRowObjs();
+            if(editedRows.length == 0){
+                alert("no edit data.");
+                return;
+            }
+            if(editedRows[0] == undefined){
+                alert("No Id Column.");
+                return;
+            }
+            this.$refs.matrix.clearEdit();
+            saveToSalesforce(editedRows);
+            
+
+            // let editedRows = $("tr[edited]");
+            // let editRowIndesList = [];
+            // let updateRecList = [];
+            // for(let i=0 ; i<editedRows.length; i++){
+            //     let rowCell = editedRows[i];
+            //     let rowIndex = $(rowCell).prevAll().length;
+            //     let rec = {};
+            //     let editedCells = $(rowCell).find("td[edited]");
+            //     for(let j=0 ; j<editedCells.length ; j++){
+            //         let cell = editedCells[j];
+            //         let cellColIndex = $(cell).prevAll().length - 1;
+            //         let colHeader = dataGrid.getColHeader(cellColIndex);
+            //         let data = dataGrid.getDataAtCell(rowIndex, cellColIndex);
+            //         rec[colHeader] = data;
+            //     }
+            //     rec.Id = dataGrid.getDataAtCell(rowIndex, dataGrid.headerMap["Id"]);
+            //     updateRecList.push(rec);
+            // }
+            // saveToSalesforce(updateRecList);
         },
         objSelect:function(val){
             let input = val;
@@ -58,13 +94,105 @@ function init(){
             editor.setValue(sql);
         },
         downloadCSVClick:function(){
-            searchDatas("csv");
+            this.searchDatas("csv");
         },
         upsertCSVClick:function(){
             appData.upsert.show = true;
         },
         onUpsertCancle:function(){
             appData.upsert.show = false;
+        },
+        searchDatas:function(showtype){
+            var sql = editor.getValue();
+            var selectItems = [];
+            
+            var reg = /select\s+(.+)\sfrom\s+(.+)/is
+            var r = reg.exec(sql);
+            selectItems = r[1].replace(/\s+/gs, '').split(",");
+            appData.selectItems = selectItems;
+        
+            let me = this;
+        
+            SalesforceAPI.requestData(sql , function(r){
+                let datas = [];
+                let objectName = null;
+                for(let rec of r.records){
+                    let row = {};
+                    for(let item of appData.selectItems){
+                        let ps = item.split('.');
+                        if(ps.length==1){
+                            row[item] = rec[item];
+                        }else{
+                            let v = rec;
+                            for(let pro of ps){
+                                if(!v) continue;
+                                v=v[pro];
+                            }
+                            row[item] = v;
+                        }
+                    }
+                    datas.push(row);
+                    if(objectName == null){
+                        objectName = rec.attributes.type;
+                    }
+                }
+                appData.datas = datas;
+        
+                if(dataGrid != null) dataGrid.destroy();
+        
+                let colHeaders = [];
+                let columns = [];
+                let i = 0;
+                var headerMap = {};
+                for (const colHeader of selectItems) {
+                    colHeaders.push(colHeader);
+                    columns.push({data:colHeader});
+                    headerMap[colHeader] = i;
+                    i++;
+                }
+        
+                if(showtype == 'table'){
+                    let p = me.$refs.matrixParent;
+                    me.$refs.matrix.showObjDataWidthResize(colHeaders, appData.datas, p.clientWidth-6, p.clientHeight);
+                    window.dataObjName = objectName;
+
+
+                    // dataGrid = 
+                    // new Handsontable($("#dataGrid")[0], {
+                    //     data: appData.datas,
+                    //     columns: columns,
+                    //     rowHeaders: true,
+                    //     colHeaders:colHeaders,
+                    //     columnSorting: true,
+                    //     //columnHeaderHeight: 60,
+                    //     manualRowResize: true,
+                    //     manualColumnResize: true,
+                    //     rowHeights: 10,
+                    //     filters: true,
+                    //     dropdownMenu: true,
+                    //     viewportColumnRenderingOffset: 999,
+                    //     viewportRowRenderingOffset: 9999,
+                    //     afterChange: function (changes) {
+                    //         if (!changes) return;
+                    //         var table = this;
+                    //         for (let i = 0; i < changes.length; i++) {
+                    //             const change = changes[i];
+                    //             //row, prop, oldValue, newValue
+                    //             var rowFirstCell = table.getCell(change[0], table.headerMap[change[1]]);
+                    //             $(rowFirstCell).attr("edited", true);
+                    //             $(rowFirstCell).closest("tr").attr("edited", true);
+                    //         }
+                    //     }
+                    // });
+                    // dataGrid.headerMap = headerMap;
+                    // dataGrid.objectName = objectName;
+                }else if(showtype == "csv"){
+                    downloadCSV(colHeaders, appData.datas);
+                }
+            }, function(errmsg){
+                alert(JSON.stringify(errmsg));
+            });
+        
         }
     }
   });
@@ -92,91 +220,6 @@ function initFieldItems(){
 
 
 var dataGrid = null;
-function searchDatas(showtype){
-    var sql = editor.getValue();
-    var selectItems = [];
-    
-    var reg = /select\s+(.+)\sfrom\s+(.+)/is
-    var r = reg.exec(sql);
-    selectItems = r[1].replace(/\s+/gs, '').split(",");
-    appData.selectItems = selectItems;
-
-    SalesforceAPI.requestData(sql , function(r){
-        let datas = [];
-        let objectName = null;
-        for(let rec of r.records){
-            let row = {};
-            for(let item of appData.selectItems){
-                let ps = item.split('.');
-                if(ps.length==1){
-                    row[item] = rec[item];
-                }else{
-                    let v = rec;
-                    for(let pro of ps){
-                        if(!v) continue;
-                        v=v[pro];
-                    }
-                    row[item] = v;
-                }
-            }
-            datas.push(row);
-            if(objectName == null){
-                objectName = rec.attributes.type;
-            }
-        }
-        appData.datas = datas;
-
-        if(dataGrid != null) dataGrid.destroy();
-
-        let colHeaders = [];
-        let columns = [];
-        let i = 0;
-        var headerMap = {};
-        for (const colHeader of selectItems) {
-            colHeaders.push(colHeader);
-            columns.push({data:colHeader});
-            headerMap[colHeader] = i;
-            i++;
-        }
-
-        if(showtype == 'table'){
-            dataGrid = 
-            new Handsontable($("#dataGrid")[0], {
-                data: appData.datas,
-                columns: columns,
-                rowHeaders: true,
-                colHeaders:colHeaders,
-                columnSorting: true,
-                //columnHeaderHeight: 60,
-                manualRowResize: true,
-                manualColumnResize: true,
-                rowHeights: 10,
-                filters: true,
-                dropdownMenu: true,
-                viewportColumnRenderingOffset: 999,
-                viewportRowRenderingOffset: 9999,
-                afterChange: function (changes) {
-                    if (!changes) return;
-                    var table = this;
-                    for (let i = 0; i < changes.length; i++) {
-                        const change = changes[i];
-                        //row, prop, oldValue, newValue
-                        var rowFirstCell = table.getCell(change[0], table.headerMap[change[1]]);
-                        $(rowFirstCell).attr("edited", true);
-                        $(rowFirstCell).closest("tr").attr("edited", true);
-                    }
-                }
-            });
-            dataGrid.headerMap = headerMap;
-            dataGrid.objectName = objectName;
-        }else if(showtype == "csv"){
-            downloadCSV(colHeaders, appData.datas);
-        }
-    }, function(errmsg){
-        alert(JSON.stringify(errmsg));
-    });
-
-}
 
 function downloadCSV(colHeaders, datas){
     let result = [];
@@ -213,41 +256,12 @@ function downloadCSV(colHeaders, datas){
     link.click();
 }
 
-function saveDatas(){
-    if(dataGrid.headerMap["Id"] == undefined){
-        alert("No Id Column.");
-        return;
-    }
-    if(dataGrid.objectName == null){
-        return;
-    }
-    let editedRows = $("tr[edited]");
-    let editRowIndesList = [];
-    let updateRecList = [];
-    for(let i=0 ; i<editedRows.length; i++){
-        let rowCell = editedRows[i];
-        let rowIndex = $(rowCell).prevAll().length;
-        let rec = {};
-        let editedCells = $(rowCell).find("td[edited]");
-        for(let j=0 ; j<editedCells.length ; j++){
-            let cell = editedCells[j];
-            let cellColIndex = $(cell).prevAll().length - 1;
-            let colHeader = dataGrid.getColHeader(cellColIndex);
-            let data = dataGrid.getDataAtCell(rowIndex, cellColIndex);
-            rec[colHeader] = data;
-        }
-        rec.Id = dataGrid.getDataAtCell(rowIndex, dataGrid.headerMap["Id"]);
-        updateRecList.push(rec);
-    }
-    saveToSalesforce(updateRecList);
-}
-
 async function saveToSalesforce(updateRecList){
     let errMsg = [];
     for(let updateRec of updateRecList){
         let Id = updateRec.Id;
         delete updateRec.Id;
-        let result = await SalesforceAPI.requestSaveDataSync(dataGrid.objectName, Id, JSON.stringify(updateRec));
+        let result = await SalesforceAPI.requestSaveDataSync(window.dataObjName, Id, JSON.stringify(updateRec));
         if(result != "success"){
             errMsg.push(result);
         }

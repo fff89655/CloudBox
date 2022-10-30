@@ -7,14 +7,15 @@
         <script src="/lib/vue.js"></script>
         <script src="/js/base.js"></script>
 
-        <script src="/pages/cmpLib/CanvasTable/CanvasTable.js" ></script>
-        
-        <link rel="stylesheet" href="/pages/cmpLib/CanvasTable/CanvasTable.css">
-        
+        <script src="/js/Matrix.js" ></script>
+        <script src="/pages/cmpLib/Matrix/Matrix.js" ></script>
+        <link rel="stylesheet" href="/pages/cmpLib/Matrix/Matrix.css">
     </head>
     <body>
         <div id="app">
-            <canvas-table></canvas-table>
+            <button @click="onchangeData">search data</button>
+            <button @click="onChangeSize">changeSize</button>
+            <matrix ref="m" :width="width" :height="height"></matrix>
         </div>
         <script src="CanvasTable.js" ></script>
     </body>
