@@ -146,17 +146,22 @@ class Cmp {
         // });
     }
     paint(ctx) {
+        this.beginPaint(ctx);
         //console.log(this.constructor.name  + JSON.stringify(this.rect));
         this.onPaint(ctx);
+        this.endPaint(ctx);
     }
     firePaint(ctx) {
         ctx.save();
         ctx.translate(this.rect.x, this.rect.y);
+        this.paint(ctx);
         for (const child of this.childCmps) {
             child.firePaint(ctx);
         }
-        this.paint(ctx);
         ctx.restore();
+    }
+    repaint() {
+        this.firePaint(this.ctx);
     }
     beginPaint(ctx, xy0 = null) {
         ctx.save();
@@ -296,6 +301,7 @@ class Cmp {
 class TableSetting {
     constructor() {
         this.cellDefaultMaxWidth = 600;
+        this.bg = "white";
         this.font = "16px arial,sans-serif";
         this.fontStyle = 'black';
         this.cellBorderStyle = '#a7bfcc';
@@ -303,7 +309,7 @@ class TableSetting {
         this.cellEditedFillStyle = "#F58E00";
         this.cellPaddingH = 8;
         this.cellPaddingV = 8;
-        this.row0Height = 30;
+        this.row0Height = 40;
         this.col0Width = 40;
         this.headerLinearGradientStart = "#cfd9df";
         this.headerLinearGradientEnd = "white";
@@ -511,6 +517,8 @@ class Matrix extends Cmp {
         this.col0.reRend();
     }
     onPaint(ctx) {
+        ctx.fillStyle = this.setting.bg;
+        ctx.fillRect(0, 0, this.rect.width, this.rect.height);
         ctx.fillStyle = this.setting.cellBorderStyle;
         this.drawHorizontalLine(ctx, 0, 0, this.rect.width);
         this.drawHorizontalLine(ctx, 0, this.rect.height - 1, this.rect.width);
@@ -543,9 +551,6 @@ class Matrix extends Cmp {
             }
         }
         this.repaint();
-    }
-    repaint() {
-        this.firePaint(this.ctx);
     }
 }
 class MatrixCenterData extends Cmp {
@@ -950,7 +955,8 @@ class MatrixCenterData extends Cmp {
             }
         }
         else {
-            ctx.clearRect(1, 1, cell.rect.width - 1, cell.rect.height - 1);
+            ctx.fillStyle = setting.bg;
+            ctx.fillRect(1, 1, cell.rect.width - 1, cell.rect.height - 1);
         }
         // draw edited cell icon
         if (cell.edited) {
