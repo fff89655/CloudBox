@@ -1,0 +1,42 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta http-equiv="X-UA-Compatible" content="ie=edge">
+      <title>svg画像の色を変えるよ</title>
+</head>
+<style>
+  .hamburgerbox {
+        width: 300px;
+        background-color: #ffbc0d;
+        border: 2px solid #ffbc0d;
+        border-radius: 4px;
+        color: #fff;
+        transition: .3s;
+        text-align: center;
+        cursor: pointer;
+  }
+  .hamburgerbox:hover {
+        color: #ffbc0d;
+        background-color: #fff;
+  }
+  svg, object {
+        width: 40%;
+        fill: currentColor;
+  }
+  #hamburger {
+    color: #fff;
+  }
+
+</style>
+<body>  
+  <div class="hamburgerbox">
+    <h3 class="title">マウスオーバーで色が変わるよ</h3>
+      <svg>
+        <use xlink:href="temp.svg#hamburger"></use>
+      </svg>
+  </div>   
+</body>
+</html>

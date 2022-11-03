@@ -35,7 +35,7 @@
         </div>
       </div>
 
-      <div class="topDiv">
+      <div class="topDiv btns">
 
         Id : <input style="width:200px;" type="text" v-model:value="appData.idVal">
         <button v-on:click="onSearchClick()">search</button>
@@ -71,12 +71,12 @@
                 <input type="text" @change="onFilterChange($event)"></input>
             </div>
         </div>
-        <div class="w3-right">
-          <button class="w3-button w3-light-blue w3-hover-blue w3-cell" v-on:click="onObjClick()">Obj定義</button>
-          <button class="w3-button w3-light-blue w3-hover-blue w3-cell" v-on:click="onObjRefClick()">Obj参照</button>
-          <button class="w3-button w3-light-blue w3-hover-blue w3-cell" v-on:click="onRecordRefClick()">レコード参照</button>
-          <button class="w3-button w3-light-blue w3-hover-blue w3-cell" v-on:click="onCopyClick()">コピー</button>
-          <button class="w3-button w3-light-blue w3-hover-blue w3-cell" v-on:click="onSaveClick()">保存</button>
+        <div class="btns w3-right">
+          <button v-on:click="onObjClick()">Obj定義</button>
+          <button v-on:click="onObjRefClick()">Obj参照</button>
+          <button v-on:click="onRecordRefClick()">レコード参照</button>
+          <button v-on:click="onCopyClick()">コピー</button>
+          <button v-on:click="onSaveClick()">保存</button>
         </div>
       </div>
 

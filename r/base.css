@@ -4,7 +4,7 @@
 body{
     background-color: #ededed;
 }
-button{
+.btns button{
     background-color: #0075f5;
     color:white;
     cursor: pointer;
@@ -15,10 +15,17 @@ button{
     border-radius: 5px;
     height:36px;
 }
-button:hover{
+.btns button:hover{
     background-color: #0468d3;
 }
 input[type=text]{
     height:36px;
     border:2px solid #0075f5;
+}
+.frameTable{
+    border-collapse: collapse;
+}
+.frameTable>tr>td{
+    border:0;
+    padding:0;
 }

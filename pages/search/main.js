@@ -7,7 +7,8 @@ SalesforceAPI.LoginInfor = parentLoginInfor.LoginInfor;
 var appData = {datas:[], selectItems:[], input:{objName:null}, searchObj:null, objItems:[],
                fieldSelect:{cmpName:null, show:false, fieldSelectProp:{object:null,selectedFieldNames:null,width:800,height:500},},
                upsert:{show:false},
-               matrix:{width:0, height:0}
+               matrix:{width:0, height:0},
+               sqlList:{sqlList:null,historyList:null,currentSql:null}
               };
 var objMap = null;
 
@@ -20,7 +21,7 @@ function init(){
         search:function(){
           this.searchDatas("table");
         },
-        save:function(){
+        save: async function(){
             if(!window.dataObjName){
                 alert("no search data.");
                 return;
@@ -34,9 +35,16 @@ function init(){
                 alert("No Id Column.");
                 return;
             }
-            this.$refs.matrix.clearEdit();
-            saveToSalesforce(editedRows);
-            
+            let obj = objMap[window.dataObjName];
+            for(let row of editedRows){
+                for(let pro in row){
+                    if(obj.fieldMap[pro].type == "datetime"){
+                        row[pro] = ComFun.toSFDCDataTimeFormat(row[pro]);
+                    }
+                }
+            }
+            let r = await saveToSalesforce(editedRows);
+            if(r) this.$refs.matrix.clearEdit();
 
             // let editedRows = $("tr[edited]");
             // let editRowIndesList = [];
@@ -84,7 +92,7 @@ function init(){
 
             let sql = `SELECT\n\t${selectedFields.join(",\n\t")}\nFROM ${appData.input.objName}`;
             editor.setValue(sql);
-            
+            editor.focus();
             this.fieldSelect.show = false;
         },
         showAsLabel:function(){
@@ -116,25 +124,24 @@ function init(){
             SalesforceAPI.requestData(sql , function(r){
                 let datas = [];
                 let objectName = null;
+                let colField = {};
                 for(let rec of r.records){
-                    let row = {};
-                    for(let item of appData.selectItems){
-                        let ps = item.split('.');
-                        if(ps.length==1){
-                            row[item] = rec[item];
-                        }else{
-                            let v = rec;
-                            for(let pro of ps){
-                                if(!v) continue;
-                                v=v[pro];
-                            }
-                            row[item] = v;
-                        }
-                    }
-                    datas.push(row);
                     if(objectName == null){
                         objectName = rec.attributes.type;
                     }
+                    let row = {};
+                    for(let item of appData.selectItems){
+                        if(!colField[item]){
+                            colField[item] = ComFun.getRefRecordField(rec, item, objMap);
+                        }
+                        row[item] = ComFun.getRefRecordValue(rec, item);
+                        if(row[item] != null){
+                            if(colField[item].type == "datetime"){
+                                row[item] = ComFun.toComDateFormat(row[item]);
+                            }
+                        }
+                    }
+                    datas.push(row);
                 }
                 appData.datas = datas;
         
@@ -152,11 +159,15 @@ function init(){
                 }
         
                 if(showtype == 'table'){
+
+                    $("#sqlDiv").css("height","100px");
+
                     let p = me.$refs.matrixParent;
-                    me.$refs.matrix.showObjDataWidthResize(colHeaders, appData.datas, p.clientWidth-6, p.clientHeight);
+                    
+                    me.$refs.matrix.showObjDataWidthResize(colHeaders, appData.datas, p.clientWidth, p.clientHeight);
                     window.dataObjName = objectName;
 
-
+                    me.updateHistory(objectName);
                     // dataGrid = 
                     // new Handsontable($("#dataGrid")[0], {
                     //     data: appData.datas,
@@ -193,7 +204,45 @@ function init(){
                 alert(JSON.stringify(errmsg));
             });
         
+        },
+        onSqlClick:function(node){
+            editor.setValue(node.sql ? node.sql:"");
+            appData.sqlList.currentSql = node;
+            editor.focus();
+        },
+        onAddSql:function(node){
+            ChromeAPI.saveLocalData("SQLListMap", appData.sqlList.sqlList);
+        },
+        onDeleteSql:function(node){
+            ChromeAPI.saveLocalData("SQLListMap", appData.sqlList.sqlList);
+        },
+        onRenameSql:function(node){
+            ChromeAPI.saveLocalData("SQLListMap", appData.sqlList.sqlList);
+        },
+        saveSql:function(){
+            appData.sqlList.currentSql.sql = editor.getValue();
+            ChromeAPI.saveLocalData("SQLListMap", appData.sqlList.sqlList, function(){
+                alert("save over.");
+            });
+        },
+        updateHistory:function(objectName){
+            let sql = editor.getValue();
+            let newHistory = [];
+            newHistory.push({title:`${objectName}`, sql:sql});
+            for(let hd of appData.sqlList.historyList.children){
+                if(hd.sql == sql){
+                    continue ;
+                }else{
+                    newHistory.push(hd);
+                }
+            }
+
+            appData.sqlList.historyList.children = newHistory;
+
+            ChromeAPI.saveLocalData("HistorySQLListMap", appData.sqlList.historyList);
+            this.$refs.historyTree.loadTreeData(appData.sqlList.historyList);
         }
+
     }
   });
   editorInit();
@@ -204,8 +253,22 @@ function loadData(){
   BaseAPI.loadObjMap(function(objMapP){
     appData.objMap = objMapP;
     objMap = objMapP;
-
-    init();
+    
+    ChromeAPI.getLocalData("SQLListMap",function(sqlListMap){
+        if(!sqlListMap.SQLListMap){
+            sqlListMap.SQLListMap = {title:"sql"};
+            ChromeAPI.saveLocalData("SQLListMap", sqlListMap.SQLListMap);
+        }
+        appData.sqlList.sqlList = sqlListMap.SQLListMap;
+        ChromeAPI.getLocalData("HistorySQLListMap",function(historySQLListMap){
+            if(!historySQLListMap.HistorySQLListMap){
+                historySQLListMap.HistorySQLListMap = {title:"history", children:[]};
+                ChromeAPI.saveLocalData("HistorySQLListMap", historySQLListMap.HistorySQLListMap);
+            }
+            appData.sqlList.historyList = historySQLListMap.HistorySQLListMap;
+            init();
+        });
+    });
   });
 }
 loadData();
@@ -268,20 +331,24 @@ async function saveToSalesforce(updateRecList){
     }
     if(errMsg.length > 0){
         alert(errMsg);
+        return false;
     }else{
         alert("保存成功。");
-        clearEdited();
+        // clearEdited();
+        return true;
     }
 }
 
-function clearEdited(){
-    $("[edited]").removeAttr('edited');
-}
+// function clearEdited(){
+//     $("[edited]").removeAttr('edited');
+// }
 
 var editor;
 var editorInit = function(){
  editor = ace.edit("editor");
  editor.setTheme("ace/theme/chrome");
  editor.session.setMode("ace/mode/sql");
- 
+ editor.on("focus", function(e) {
+    $(e.target).closest("#sqlDiv").css("height","100%");
+ });
 }

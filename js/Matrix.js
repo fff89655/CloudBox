@@ -1,3 +1,79 @@
+class Point {
+    static init(x, y) {
+        let p = new Point();
+        p.x = x, p.y = y;
+        return p;
+    }
+}
+class Size {
+    static init(width, height) {
+        let s = new Size();
+        s.width = width, s.height = height;
+        return s;
+    }
+}
+class EventDispatcher {
+    addEventListener(type, listener) {
+    }
+    fireEvent(event) {
+    }
+    removeEventListener(type, listener) {
+    }
+}
+class DisplayObject extends EventDispatcher {
+    constructor() {
+        super();
+        this.visible = true;
+    }
+    draw() { }
+}
+class InteractiveObject extends EventDispatcher {
+    constructor() {
+        super();
+        this.doubleClickEnabled = false;
+        this.mouseEnabled = false;
+        this.tabEnabled = false;
+    }
+}
+class DisplayObjectContainer extends InteractiveObject {
+    get childCount() {
+        return 0;
+    }
+    addChild(child) {
+        return null;
+    }
+    addChildAt(child, index) {
+        return null;
+    }
+    containsChild(child) {
+        return null;
+    }
+    getChildAt(index) {
+        return null;
+    }
+    getChildByName(name) {
+        return null;
+    }
+    getChildIndex(child) {
+        return null;
+    }
+    removeChild(child) {
+        return null;
+    }
+    removeChildAt(index) {
+        return null;
+    }
+    swapChildren(child1, child2) {
+    }
+    swapChildrenAt(index1, index2) {
+    }
+}
+class Shape extends DisplayObject {
+}
+class Button extends InteractiveObject {
+}
+class XYContainer extends DisplayObjectContainer {
+}
 class DragImpl {
     constructor(el, rect = null) {
         this.el = el;
@@ -62,13 +138,6 @@ class TableCol {
         this.width = width;
     }
 }
-class Size {
-    static init(width, height) {
-        let s = new Size();
-        s.width = width, s.height = height;
-        return s;
-    }
-}
 class Rect {
     static init(x, y, width, height) {
         let r = new Rect();
@@ -105,13 +174,6 @@ class Rect {
         else {
             return false;
         }
-    }
-}
-class Point {
-    static init(x, y) {
-        let p = new Point();
-        p.x = x, p.y = y;
-        return p;
     }
 }
 // @ts-nocheck
@@ -485,6 +547,8 @@ class Matrix extends Cmp {
         this.col0.resetData();
         this.reLayout();
         this.firePaint(this.ctx);
+        this.scrollTop = 0;
+        this.scrollLeft = 0;
     }
     getEditedRowObjs() {
         return this.centerData.getEditedRowObjs();
@@ -507,18 +571,18 @@ class Matrix extends Cmp {
         this.col0.rect = Rect.init(0, st.row0Height, st.col0Width, this.rect.height - st.row0Height - this.scrollbarH.getHeight());
         this.centerData.rect = Rect.init(st.col0Width, st.row0Height, this.rect.width - st.col0Width - this.scrollbarV.getWidth(), this.rect.height - st.row0Height - this.scrollbarH.getHeight());
         if (this.scrollbarV.isVisible()) {
-            this.scrollbarV.rect = Rect.init(this.col0.rect.width + this.centerData.rect.width, 0, st.scrollbarWidth, this.rect.height);
+            this.scrollbarV.rect = Rect.init(this.col0.rect.width + this.centerData.rect.width - 1, 1, st.scrollbarWidth, this.rect.height - 2);
         }
         if (this.scrollbarH.isVisible()) {
-            this.scrollbarH.rect = Rect.init(0, this.row0.rect.height + this.centerData.rect.height, this.rect.width - this.scrollbarV.getWidth(), st.scrollbarWidth);
+            this.scrollbarH.rect = Rect.init(1, this.row0.rect.height + this.centerData.rect.height - 1, this.rect.width - this.scrollbarV.getWidth(), st.scrollbarWidth);
         }
         this.centerData.reRend();
         this.row0.reRend();
         this.col0.reRend();
     }
     onPaint(ctx) {
-        ctx.fillStyle = this.setting.bg;
-        ctx.fillRect(0, 0, this.rect.width, this.rect.height);
+        // ctx.fillStyle = this.setting.bg;
+        // ctx.fillRect(0, 0, this.rect.width, this.rect.height);
         ctx.fillStyle = this.setting.cellBorderStyle;
         this.drawHorizontalLine(ctx, 0, 0, this.rect.width);
         this.drawHorizontalLine(ctx, 0, this.rect.height - 1, this.rect.width);
@@ -809,8 +873,8 @@ class MatrixCenterData extends Cmp {
         return this.canvasCtx.getImageData(rect.x, rect.y, rect.width, rect.height);
     }
     inputCellValue(cell) {
-        let v = prompt("input value:", cell.text);
-        if (v && v != cell.text) {
+        let v = prompt("input value:", cell.text == null ? "" : cell.text);
+        if (v != null && v != cell.text) {
             this.setCellValue(this.selectStartCell, v);
             this.repaintCell([this.selectStartCell]);
         }
@@ -950,6 +1014,8 @@ class MatrixCenterData extends Cmp {
             ctx.fillRect(2, 2, cell.rect.width - 3, cell.rect.height - 3);
             if (cell.selectedStart) {
                 ctx.beginPath();
+                ctx.lineWidth = "1";
+                ctx.strokeStyle = "gray";
                 ctx.rect(2, 2, cell.rect.width - 3, cell.rect.height - 3);
                 ctx.stroke();
             }
@@ -1647,6 +1713,15 @@ class ScrollbarV extends Cmp {
         ctx.fillRect(this.handleRect.x, this.handleRect.y, this.handleRect.width, this.handleRect.height);
     }
 }
+/// <reference path="CmpBase/Point.ts"/>
+/// <reference path="CmpBase/Size.ts"/>
+/// <reference path="CmpBase/EventDispatcher.ts"/>
+/// <reference path="CmpBase/DisplayObject.ts"/>
+/// <reference path="CmpBase/InteractiveObject.ts"/>
+/// <reference path="CmpBase/DisplayObjectContainer.ts"/>
+/// <reference path="CmpBase/Shape.ts"/>
+/// <reference path="CmpBase/Button.ts"/>
+/// <reference path="CmpBase/XYContainer.ts"/>
 /// <reference path="Base/DragImpl.ts"/>
 /// <reference path="CmpBase/SimpleObject.ts"/>
 /// <reference path="CmpBase/Cmp.ts"/>

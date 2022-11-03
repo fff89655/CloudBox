@@ -1,0 +1,71 @@
+
+.treeRoot{
+    display:inline-block;
+    border:1px solid gray;
+    width:100%;
+    height:100%;
+}
+.treeRoot .treeTitle{
+    background-color: #40b9ef;
+}
+.treeRoot .treeTitleContent{
+    color: white;
+}
+.treeRoot .treeNode{
+    border-bottom:1px solid lightgray;
+    border-top:1px solid lightgray;
+    white-space: nowrap;
+}
+.treeRoot .treeNodeName{
+    display:inline-block;
+}
+.treeNode:hover{
+    background-color:#C6D9F6;
+    cursor: pointer;
+}
+.treeRoot .treeNode.selectedNode{
+    background-color:#94B4E6;
+}
+.treeRoot .dragMoveOn{
+    color:red;
+}
+.treeRoot .dragMoveOn_Top{
+    border-top: 1px solid red;
+}
+.treeRoot .dragMoveOn_Bottom{
+    border-bottom: 1px solid red;
+}
+.dragTreeNodeDiv{
+    position: absolute;
+    border:1px solid black;
+    background-color:white;
+}
+.treeRoot.noselect {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently supported by Chrome and Opera */
+}
+.treeRoot .treeHandle{
+    display:inline-block;
+    padding:2px;
+    width:100%;
+}
+.treeRoot .treeGrid{
+    display:inline-block;
+}
+.treeRoot .treeGridCell{
+    border-left:2px solid lightgray;
+    display:inline-block;
+    padding:2px;
+}
+
+.treeNodeButton{
+  display: none;
+  line-height: 14px;
+}
+.treeHandle:hover .treeNodeButton{
+  display:inline-block;
+}

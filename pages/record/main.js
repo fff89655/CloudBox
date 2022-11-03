@@ -342,7 +342,7 @@ var vue = new Vue({
     },
     onFilterChange(e){
         let v = e.target.value;
-        let reg = new RegExp(v);
+        let reg = new RegExp(v,"i");
         let all = [];
         all.push(...appData.selectItems);
         all.push(...appData.selectStandardItems);

@@ -41,6 +41,7 @@ var urlMap = {
   "objDef":"../objDef/index.html",
   "record":"../record/index.html",
   "sql":"../search/index.html",
+  "dataView":"../dataView/index.html",
   "config":"../config/index.html"
 };
 
@@ -50,6 +51,7 @@ var tabTemplateMap = {
   "objDef":`<div class="tabDiv"><i class='fas fa-database tabIcon'></i></div>`,
   "record":`<div class="tabDiv"><i class='fas fa-file-alt tabIcon'></i</div>`,
   "sql":`<div class="tabDiv"><i class='fas fa-scroll tabIcon'></i></div>`,
+  "dataView":`<div class="tabDiv" style="padding-left:0"><svg style="fill: currentColor;width:30px;height:24px;"><use xlink:href="../../../imgs/marker.svg#icon"></use></svg></div>`,
   "config":`<div class="tabDiv"><i class='fas fa-tools tabIcon'></i></div>`
 };
 

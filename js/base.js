@@ -932,6 +932,7 @@ var BaseAPI = (function () {
         r.custom = obj.custom;
         r.keyPrefix = obj.keyPrefix;
         r.fields = [];
+        r.fieldMap = {};
         r.childRelationships = obj.childRelationships;
         for (const f of obj.fields) {
           var ff = {};
@@ -960,6 +961,7 @@ var BaseAPI = (function () {
             }
           }
           r.fields.push(ff);
+          r.fieldMap[ff.name] = ff;
         }
       
         return r;
@@ -1024,21 +1026,14 @@ SQLWrapper.prototype.translate = function(objMap){
             let objList = [objMap[this.objName]];
             for(let i=0 ; i<ts.length-1 ; i++){
                 let fieldName = ts[i].replaceAll("__r","__c");
-                for(let field of objList[objList.length-1].fields){
-                    if(field.name == fieldName){
-                        objList.push(objMap[field.referenceTo]);
-                    }
-                }
+                let field = objList[objList.length-1].fieldMap[fieldName];
+                objList.push(objMap[field.referenceTo]);
             }
             for(let i=0 ; i<ts.length ; i++){
                 let apiName = ts[i].replaceAll("__r","__c");
                 let obj = objList[i];
-                debugger;
-                for(let field of obj.fields){
-                    if(field.name == apiName){
-                        labels.push(field.label);
-                    }
-                }
+                let field = obj.fieldMap[apiName];
+                labels.push(field.label);
             }
             if(ts.length == labels.length){
                 word.label = labels.join(".");
@@ -1090,7 +1085,77 @@ SQLWrapper.prototype.preparTransInfo = function(objMap){
     return transMap;
 }
 
-
+var ComFun = {}
+// paramater: record ={Account__r:{LastModifiedDate:"xxx"}} colStr="Account__r.LastModifiedDate"
+// return xxx
+ComFun.getRefRecordValue = function (record, colStr){
+    let ps = colStr.split('.');
+    if(ps.length==1){
+        return record[colStr];
+    }else{
+        let v = record;
+        for(let pro of ps){
+            if(!v) continue;
+            v=v[pro];
+        }
+        return v;
+    }
+}
+// colStr:Account__r.Test__r.CreatedDate
+// record:
+// {
+//     "attributes":{
+//        "type":"TestObject__c",
+//     },
+//     "Account__c":"0016F00002N4ldtQAB",
+//     "Account__r":{
+//        "attributes":{
+//           "type":"Account",
+//        },
+//        "Test__c":"a0Q6F00000W0naJUAR",
+//        "Test__r":{
+//           "attributes":{
+//              "type":"TestObject__c",
+//           },
+//           "CreatedDate":"2022-10-02T10:29:29.000+0000"
+//        }
+//     }
+//  }
+ComFun.getRefRecordField = function (record, colStr, objMap){
+    let ps = colStr.split('.');
+    if(ps.length==1){
+        return objMap[record["attributes"].type].fieldMap[colStr];
+    }else{
+        let v = record;
+        for(let i=0 ; i<ps.length-1; i++){
+            v=v[ps[i]];
+            if(v == null) return null;
+        }
+        return objMap[v["attributes"].type].fieldMap[ps[ps.length-1]];
+    }
+}
+// 2022-10-24T07:17:35.000+0000 to 2022-10-24 07:17:35
+ComFun.toComDateFormat = function (dateStr){
+    if(!this.sfdcDateTimeReg){
+        this.sfdcDateTimeReg = /(\d\d\d\d-\d\d-\d\d)T(\d\d:\d\d:\d\d)\.000\+0000/
+    }
+    let m = this.sfdcDateTimeReg.exec(dateStr);
+    if(m){
+        return `${m[1]} ${m[2]}`;
+    }
+    return dateStr;
+}
+// 2022-10-24 07:17:35 to 2022-10-24T07:17:35.000+0000
+ComFun.toSFDCDataTimeFormat = function(dateStr){
+    if(!this.comTimeReg){
+        this.comTimeReg = /(\d\d\d\d-\d\d-\d\d) (\d\d:\d\d:\d\d)/
+    }
+    let m = this.comTimeReg.exec(dateStr);
+    if(m){
+        return `${m[1]}T${m[2]}.000+0000`;
+    }
+    return dateStr;
+}
 
 
 window.resetIcon = function(){
