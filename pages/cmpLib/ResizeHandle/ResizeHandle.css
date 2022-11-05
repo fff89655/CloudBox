@@ -1,0 +1,12 @@
+.resizehandle{
+    width:4px;
+    height:4px;
+    background:#53a6ff;
+    text-align: center;
+    cursor: grab;
+}
+.resizehandle button{
+    height:100%;
+    font-size:8px;
+    padding:0;
+}

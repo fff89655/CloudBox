@@ -8,7 +8,8 @@ var appData = {datas:[], selectItems:[], input:{objName:null}, searchObj:null, o
                fieldSelect:{cmpName:null, show:false, fieldSelectProp:{object:null,selectedFieldNames:null,width:800,height:500},},
                upsert:{show:false},
                matrix:{width:0, height:0},
-               sqlList:{sqlList:null,historyList:null,currentSql:null}
+               sqlList:{sqlList:null,historyList:null,sqlMenu:[{label:"save to",fun:saveSqlToTree}]},
+               size:{editorHeight:300,sqlListWidth:200}
               };
 var objMap = null;
 
@@ -17,6 +18,9 @@ function init(){
   var v = new Vue({
     el: '#app',
     data: appData,
+    mounted:function(){
+        $("#app").show();
+    },
     methods: {
         search:function(){
           this.searchDatas("table");
@@ -160,11 +164,13 @@ function init(){
         
                 if(showtype == 'table'){
 
-                    $("#sqlDiv").css("height","100px");
+                    // $("#sqlDiv").css("height","100px");
 
                     let p = me.$refs.matrixParent;
-                    
-                    me.$refs.matrix.showObjDataWidthResize(colHeaders, appData.datas, p.clientWidth, p.clientHeight);
+
+                    if(appData.datas.length > 0){
+                        me.$refs.matrix.showObjDataWidthResize(colHeaders, appData.datas, p.clientWidth, p.clientHeight);
+                    }
                     window.dataObjName = objectName;
 
                     me.updateHistory(objectName);
@@ -207,10 +213,10 @@ function init(){
         },
         onSqlClick:function(node){
             editor.setValue(node.sql ? node.sql:"");
-            appData.sqlList.currentSql = node;
             editor.focus();
         },
         onAddSql:function(node){
+            debugger;
             ChromeAPI.saveLocalData("SQLListMap", appData.sqlList.sqlList);
         },
         onDeleteSql:function(node){
@@ -219,21 +225,20 @@ function init(){
         onRenameSql:function(node){
             ChromeAPI.saveLocalData("SQLListMap", appData.sqlList.sqlList);
         },
-        saveSql:function(){
-            appData.sqlList.currentSql.sql = editor.getValue();
-            ChromeAPI.saveLocalData("SQLListMap", appData.sqlList.sqlList, function(){
-                alert("save over.");
-            });
-        },
         updateHistory:function(objectName){
             let sql = editor.getValue();
             let newHistory = [];
             newHistory.push({title:`${objectName}`, sql:sql});
+            let n = 0;
             for(let hd of appData.sqlList.historyList.children){
                 if(hd.sql == sql){
                     continue ;
                 }else{
                     newHistory.push(hd);
+                }
+                n++;
+                if(n>100){
+                    break;
                 }
             }
 
@@ -241,8 +246,15 @@ function init(){
 
             ChromeAPI.saveLocalData("HistorySQLListMap", appData.sqlList.historyList);
             this.$refs.historyTree.loadTreeData(appData.sqlList.historyList);
+        },
+        onYResize:function(offset){
+            appData.size.editorHeight += offset;
+            window.dispatchEvent(new Event('resize'));
+        },
+        onXResize:function(offset){
+            appData.size.sqlListWidth += offset;
+            window.dispatchEvent(new Event('resize'));
         }
-
     }
   });
   editorInit();
@@ -348,7 +360,14 @@ var editorInit = function(){
  editor = ace.edit("editor");
  editor.setTheme("ace/theme/chrome");
  editor.session.setMode("ace/mode/sql");
- editor.on("focus", function(e) {
-    $(e.target).closest("#sqlDiv").css("height","100%");
- });
+//  editor.on("focus", function(e) {
+//     $(e.target).closest("#sqlDiv").css("height","100%");
+//  });
+}
+
+function saveSqlToTree(node){
+    node.model.sql = editor.getValue();
+    ChromeAPI.saveLocalData("SQLListMap", appData.sqlList.sqlList, function(){
+        alert("save over.");
+    });
 }

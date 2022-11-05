@@ -1,0 +1,7 @@
+.resizeTable{
+    border-collapse: collapse;
+}
+.resizeTable td{
+    border:20px solid black;
+    background-color: lightblue;
+}

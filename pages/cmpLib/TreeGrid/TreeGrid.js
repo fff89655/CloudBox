@@ -265,11 +265,19 @@ TreeNode.prototype.mouseLeave = function(){
 
 Vue.component('tree-grid', {
     template: `
-<div class="treeRoot noselect">
+<div class="treeRoot noselect" v-on:contextmenu.prevent="">
+    <div v-if="editable || menus>0" id="tabMenu" class="w3-dropdown-content w3-bar-block w3-border" style="z-index:999" 
+        @mouseleave="onMenuLeave"
+        :style="menuStyle">
+        <a v-if="editable" href="#" class="w3-bar-item w3-button" @click="addChild">add Child</a>
+        <a v-if="editable" href="#" class="w3-bar-item w3-button" @click="deleteNode">remove</a>
+        <a v-if="editable" href="#" class="w3-bar-item w3-button" @click="renameNode">rename Node</a>
+        <a v-for="m in menus" href="#" class="w3-bar-item w3-button" @click="menuClick(m)">{{m.label}}</a>
+    </div>
     <div>
         <table class="treeTitle" style="width:100%;">
             <tr>
-                <td class="treeTitleContent">Tree</td>
+                <td class="treeTitleContent">{{title}}</td>
                 <td style="width:150px;">
                     <button v-on:click="collAll">CA</button>
                     <button v-on:click="expendAll">EA</button>
@@ -280,22 +288,18 @@ Vue.component('tree-grid', {
     <div v-for="node in treeNodeList" 
         v-bind:class="'treeNode' + (node.children.length == 0 ? ' leafNode':'') + (node.selected? ' selectedNode': '')" 
         v-show="node.visible && node.isAllParentVisible()"
-        v-on:mousedown="treeNodeMouseDown(node)"
+        v-on:mousedown="treeNodeMouseDown($event, node)"
         v-on:mouseover="treeNodeMouseOver(node)"
         v-on:mouseleave="treeNodeMouseLeave(node)"
-        v-on:click="rowClick(node)">
+        v-on:click="rowClick(node)"
+        v-on:contextmenu.prevent="onMenu($event,node)">
         <div class="treeHandle"
         v-bind:style="{paddingLeft: node.paddingLeft + 'px'}" >
-            <span v-if="node.children.length == 0">-</span>
+            <span v-if="node.children.length == 0">〇</span>
             <span v-if="node.children.length != 0 && node.toggleFlg == true" v-on:click="toggleClick(node)">▷</span>
             <span v-if="node.children.length != 0 && node.toggleFlg == false" v-on:click="toggleClick(node)">▼</span>
             <div class="treeNodeName">
                 <span>{{node.model.title}}</span>
-            </div>
-            <div v-if="editable" class="treeNodeButton">
-                <button class="treeBtn" v-on:click="addChild(node)">+</button>
-                <button class="treeBtn" v-on:click="deleteNode(node)">D</button>
-                <button class="treeBtn" v-on:click="renameNode(node)">R</button>
             </div>
         </div>
         <!--<div class="treeGrid">
@@ -306,12 +310,15 @@ Vue.component('tree-grid', {
     </div>
 </div>
 ` ,
-    props:["tree_data", "columns", "editable"],
+    props:["title","tree_data", "columns", "editable", "menus"],
+    //menus: [{label:"ll",fun:fun},{...}]
     data : function(){
-        console.log("create data");
-        return {treeNodeList:[], rootNode:{}, selectedNode:{}};
+        return {treeNodeList:[], rootNode:{}, selectedNode:{},menuStyle:{display:"none",top:"100px",left:"0px"}};
     },
     created:function(){
+        if(this.editable!=false){
+            this.editable = true;
+        }
         // ChromeAPI.saveLocalData("SQLListMap",{title:"sql");
         this.loadTreeData(this.tree_data);
     },
@@ -342,23 +349,29 @@ Vue.component('tree-grid', {
         expendAll : function(){
             this.selectedNode.expendAll();
         },
-        addChild : function(clickNode){
+        addChild : function(){
+            if(!this.currentNode) return;
+            node = this.currentNode;
             var txt = prompt("addText");
             if(txt){
-                var tn = new TreeNode({title:txt}, this);
-                clickNode.appendChild(tn);
-                var lastChild = clickNode.getLastChild();
+                let model = {title:txt};
+                var tn = new TreeNode(model, this);
+                node.appendChild(tn);
+                node.toggleFlg = false;
+                node.setAllChildShow();
+                var lastChild = node.getLastChild();
                 var lastChildIndex = this.treeNodeList.indexOf(lastChild);
                 this.treeNodeList = this.rootNode.getAllGenerations();
 
-                if(!clickNode.model.children){
-                    clickNode.model.children = [];
+                if(!node.model.children){
+                    node.model.children = [];
                 }
-                clickNode.model.children.push({title:txt});
-                this.$emit('onaddchild', clickNode.model);
+                node.model.children.push(model);
+                this.$emit('onaddchild', node.model);
             }
         },
-        treeNodeMouseDown : function(node){
+        treeNodeMouseDown : function(e, node){
+            if(e.button != 0) return;
             me = this;
             node.startDrag(function(){
                 me.treeNodeList = me.rootNode.getAllGenerations();
@@ -370,7 +383,9 @@ Vue.component('tree-grid', {
         treeNodeMouseLeave : function(node){
             node.mouseLeave();
         },
-        deleteNode : function(node){
+        deleteNode : function(){
+            if(!this.currentNode) return;
+            node = this.currentNode;
             if(!confirm("Delete ?")){
               return;
             }
@@ -380,13 +395,29 @@ Vue.component('tree-grid', {
             node.parent.model.children.remove(node.model);
             this.$emit('ondeletechild', node);
         },
-        renameNode : function(node){
-          var oldName = node.model.title;
-          var con = prompt("input new name.", oldName);
-          if(con){
-            node.model.title = con;
-          }
-          this.$emit('onrename', node);
+        renameNode : function(){
+            if(!this.currentNode) return;
+            node = this.currentNode;
+            var oldName = node.model.title;
+            var con = prompt("input new name.", oldName);
+            if(con){
+                node.model.title = con;
+            }
+            this.$emit('onrename', node);
+        },
+        onMenu: function(e, node){
+            node.click();
+            this.currentNode = node;
+            this.menuStyle.top = e.clientY-15 + "px";
+            this.menuStyle.left = e.clientX-15 +  "px";
+            this.menuStyle.display = "initial";
+        },
+        onMenuLeave: function(){
+            this.menuStyle.display = "none";
+        },
+        menuClick:function(m){
+            m.fun(this.currentNode);
+            this.menuStyle.display = "none";
         }
       }
 })

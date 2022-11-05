@@ -23,6 +23,8 @@
         
         <script src="../cmpLib/TreeGrid/TreeGrid.js" ></script>
         <link rel="stylesheet" href="../cmpLib/TreeGrid/TreeGrid.css">
+        <script src="../cmpLib/Matrix/Matrix.js" ></script>
+        <link rel="stylesheet" href="../cmpLib/Matrix/Matrix.css">
 
         <link rel="stylesheet" href="../../lib/handsontable.full.min.css">
         <script src="../../lib/handsontable.full.min.js"></script>
@@ -31,13 +33,17 @@
         <script src="/pages/cmpLib/Matrix/Matrix.js" ></script>
         <link rel="stylesheet" href="/pages/cmpLib/Matrix/Matrix.css">
 
+        <script src="../cmpLib/ResizeHandle/ResizeHandleX.js" ></script>
+        <script src="../cmpLib/ResizeHandle/ResizeHandleY.js" ></script>
+        <link rel="stylesheet" href="../cmpLib/ResizeHandle/ResizeHandle.css">
+        
         <!-- Shift-JIS encoder -->
         <script src="../../lib/encoding.js"></script>
 
         <link rel="stylesheet" href="main.css">
     </head>
     <body>
-        <div id="app">
+        <div id="app" style="display:none;">
 
             <div class="mask" :class="{hide:!(fieldSelect.show || upsert.show)}"></div>
             <div class="fieldSelect" :class="fieldSelect.show?'':'hide'">
@@ -53,57 +59,63 @@
                 <upsert-panel v-bind:objitems="objItems" width="500" height="500" @oncancle="onUpsertCancle"></upsert-panel>
             </div>
 
-            <table style="width:100%;height:100%;">
+            <table class="frameTable noBorder">
                 <tr>
-                    <td rowspan="3" style="width:200px;">
-                        <table class="frameTable">
+                    <td :style="{width:size.sqlListWidth+'px'}">
+                        <table class="frameTable noBorder">
                             <tr>
                                 <td style="height:50%;">
-                                    <tree-grid :editable="true" v-bind:tree_data="sqlList.sqlList" @onrowclick="onSqlClick" @onaddchild="onAddSql" @ondeletechild="onDeleteSql" @onrename="onRenameSql"></tree-grid>
+                                    <tree-grid title="sql" :editable="true" v-bind:tree_data="sqlList.sqlList" 
+                                    :menus="sqlList.sqlMenu"
+                                    @onrowclick="onSqlClick" @onaddchild="onAddSql" @ondeletechild="onDeleteSql" @onrename="onRenameSql"></tree-grid>
                                 </td>
                             </tr>
                             <tr>
                                 <td style="height:50%;">
-                                    <tree-grid ref="historyTree" :editable="false" v-bind:tree_data="sqlList.historyList" @onrowclick="onSqlClick"></tree-grid>
+                                    <tree-grid title="history" ref="historyTree" :editable="false" v-bind:tree_data="sqlList.historyList" @onrowclick="onSqlClick"></tree-grid>
                                 </td>
                             </tr>
                         </table>
                     </td>
-                    <td class="btns" style="height:50px;">
-                        <button v-on:click="search">search</button>
-                        <button v-on:click="save">save</button>
-                        <button v-on:click="saveSql">saveSql</button>
-                        <button v-on:click="createSql">createSql</button>
-                        <button v-on:click="showAsLabel">label</button>
-                        <button v-on:click="downloadCSVClick">exportCSV</button>
-                        <button v-on:click="upsertCSVClick">upsertCSV</button>
+                    <td style="width:4;">
+                        <resizehandle-x @onresize="onXResize"></resizehandle-x>
                     </td>
-                </tr>
-                <tr>
-                    <td id="sqlDiv" style="height:100%;">
-                        <table style="width:100%;height:100%;border-collapse: collapse;">
-                            <tr>
-                                <td id="editorTd" style="border:1px solid black;">
-                                    <div id="editor">SELECT Id,Name FROM User</div>
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                    <td colspan="2">
-                        
-                    </td>
-                </tr>
-                <tr>
                     <td>
-                        <div ref="matrixParent" style="width:100%;height:100%;overflow:auto;">
-                            <div id="dataGrid" style="display: none;">
-                            </div>
-                            <matrix ref="matrix"></matrix>
-                        </div>
+                        <table class="frameTable noBorder" style="width:100%;height:100%;">
+                            <tr style="height:40px;">
+                                <td class="btns" style="width:100%;padding-left:5px;">
+                                    <button v-on:click="search">search</button>
+                                    <button v-on:click="save">save</button>
+                                    <button v-on:click="createSql">createSql</button>
+                                    <button v-on:click="showAsLabel">label</button>
+                                    <button v-on:click="downloadCSVClick">exportCSV</button>
+                                    <button v-on:click="upsertCSVClick">upsertCSV</button>
+                                </td>
+                            </tr>
+                            <tr :style="{height:size.editorHeight+'px'}" style="height:300px;">
+                                <td class="editorTd" id="sqlDiv">
+                                    <div id="editor" style="height:100%;border:1px solid gray;">SELECT Id,Name FROM User</div>
+                                </td>
+                            </tr>
+                            <tr style="height:4px;">
+                                <td>
+                                    <resizehandle-y @onresize="onYResize"></resizehandle-y>
+                                </td>
+                            </tr>
+                            <tr >
+                                <td>
+                                    <div ref="matrixParent" style="width:100%;height:100%;overflow:auto;">
+                                        <div id="dataGrid" style="display: none;">
+                                        </div>
+                                        <matrix ref="matrix" style="height:100%"></matrix>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+            
                     </td>
                 </tr>
             </table>
-
         </div>
         <script src="main.js"></script>
     </body>
