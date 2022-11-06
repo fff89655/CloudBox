@@ -249,11 +249,15 @@ function init(){
         },
         onYResize:function(offset){
             appData.size.editorHeight += offset;
-            window.dispatchEvent(new Event('resize'));
+            setTimeout(()=>{
+                window.dispatchEvent(new Event('resize'));
+            },0);
         },
         onXResize:function(offset){
             appData.size.sqlListWidth += offset;
-            window.dispatchEvent(new Event('resize'));
+            setTimeout(()=>{
+                window.dispatchEvent(new Event('resize'));
+            });
         }
     }
   });

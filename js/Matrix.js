@@ -390,6 +390,8 @@ class DataCell {
         this.rect = Rect.init(0, 0, 0, 0);
     }
     setVal(v, matrix) {
+        if (v == this.text)
+            return;
         this.text = v;
         this.edited = true;
         this.refreshSize(matrix);
@@ -492,6 +494,7 @@ class Matrix extends Cmp {
             }
         });
         this.el.addEventListener("wheel", (e) => {
+            me.el.focus();
             me.scrollTo(me.scrollTop - e.wheelDeltaY, me.scrollLeft - e.wheelDeltaX);
         });
         document.body.addEventListener("paste", (e) => {
@@ -873,11 +876,60 @@ class MatrixCenterData extends Cmp {
         return this.canvasCtx.getImageData(rect.x, rect.y, rect.width, rect.height);
     }
     inputCellValue(cell) {
-        let v = prompt("input value:", cell.text == null ? "" : cell.text);
-        if (v != null && v != cell.text) {
-            this.setCellValue(this.selectStartCell, v);
-            this.repaintCell([this.selectStartCell]);
-        }
+        // @ts-ignore: Unreachable code error
+        let inputEl = $(`<input type="text"></input>`);
+        inputEl.css("position", "absolute");
+        inputEl.css("border", "none");
+        inputEl.css("padding", `0px ${this.matrix.setting.cellPaddingH}px`);
+        inputEl.css("font", this.matrix.setting.font);
+        inputEl.css("box-sizing", "border-box");
+        inputEl.val(cell.text);
+        // @ts-ignore: Unreachable code error
+        let offset = $(this.matrix.el).offset();
+        let top = cell.rect.y + this.matrix.setting.row0Height + offset.top - this.matrix.scrollTop;
+        let left = cell.rect.x + this.matrix.setting.col0Width + offset.left - this.matrix.scrollLeft;
+        inputEl.css("top", top + 1 + "px");
+        inputEl.css("left", left + 1 + "px");
+        inputEl.css("width", cell.rect.width - 1 + "px");
+        inputEl.css("height", cell.rect.height - 1 + "px");
+        setTimeout(function () { inputEl.focus(); }, 0);
+        let me = this;
+        inputEl.keydown(function (e) {
+            let dispose = false;
+            if (e.key == "Enter") {
+                dispose = true;
+                // @ts-ignore: Unreachable code error
+                cell.setVal($(this).val(), me.matrix);
+                me.repaintCell([cell]);
+            }
+            else if (e.key == "Tab") {
+                dispose = true;
+                // @ts-ignore: Unreachable code error
+                cell.setVal($(this).val(), me.matrix);
+                me.repaintCell([cell]);
+            }
+            else if (e.key == "Escape") {
+                dispose = true;
+            }
+            if (dispose) {
+                inputEl.remove();
+                setTimeout(function () { me.matrix.el.focus(); }, 0);
+            }
+        });
+        inputEl.blur(function () {
+            inputEl.remove();
+            // @ts-ignore: Unreachable code error
+            cell.setVal($(this).val(), me.matrix);
+            me.repaintCell([cell]);
+            setTimeout(function () { me.matrix.el.focus(); }, 0);
+        });
+        // @ts-ignore: Unreachable code error
+        $(document.body).append(inputEl);
+        // let v = prompt("input value:", cell.text==null? "" : cell.text);
+        // if(v != null && v != cell.text){
+        //     this.setCellValue(this.selectStartCell, v);
+        //     this.repaintCell([this.selectStartCell]);
+        // }
     }
     selectCellRange(c1, c2) {
         let startRowIndex = -1;

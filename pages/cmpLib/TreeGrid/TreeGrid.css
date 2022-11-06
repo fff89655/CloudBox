@@ -6,10 +6,11 @@
     height:100%;
 }
 .treeRoot .treeTitle{
-    background-color: #40b9ef;
+    /* background-color: #40b9ef; */
+    background-color: #d0eefe;
 }
 .treeRoot .treeTitleContent{
-    color: white;
+    /* color: white; */
 }
 .treeRoot .treeNode{
     border-bottom:1px solid lightgray;
