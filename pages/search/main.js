@@ -94,7 +94,7 @@ function init(){
         fieldSelectOK:function(){
             let selectedFields = this.$refs.fieldSelect.getSelected();
 
-            let sql = `SELECT\n\t${selectedFields.join(",\n\t")}\nFROM ${appData.input.objName}`;
+            let sql = `SELECT\n  ${selectedFields.join(",\n  ")}\nFROM ${appData.input.objName}`;
             editor.setValue(sql);
             editor.focus();
             this.fieldSelect.show = false;

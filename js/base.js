@@ -946,7 +946,7 @@ var BaseAPI = (function () {
           ff.updateable = f.updateable;
           ff.nillable = f.nillable;
           ff.formula = f.calculatedFormula;
-          if(f.nillable && f.updateable){
+          if(!f.nillable && f.updateable){
             ff.mustInput = true;
           }else{
             ff.mustInput = false;
@@ -971,6 +971,127 @@ var BaseAPI = (function () {
 
 })();
 
+
+Translater = function(txt){
+    this.txt = txt;
+}
+Translater.prototype.translateToLabel = function(objMap, targetObj){
+    let transMap = this.preparTransInfo(objMap);
+    let words = this.getTransWords();
+
+    for(let word of words){
+        let ts = word.word.split(".");
+        if(ts.length==1){
+            let labels = transMap.get(word.word);
+            if(labels){
+                if(Array.isArray(labels)){
+                    for(let label of labels){
+                        if(label.objName == targetObj){
+                            word.label = label.label;
+                            break;
+                        }
+                    }
+                }else{
+                    if(labels.objName == targetObj){
+                        word.label = labels.label;
+                    }
+                }
+            }
+        }else{
+            let labels = [];
+            let objList = [objMap[targetObj]];
+            for(let i=0 ; i<ts.length-1 ; i++){
+                let fieldName = ts[i].replaceAll("__r","__c");
+                let field = objList[objList.length-1].fieldMap[fieldName];
+                objList.push(objMap[field.referenceTo]);
+            }
+            for(let i=0 ; i<ts.length ; i++){
+                let apiName = ts[i].replaceAll("__r","__c");
+                let obj = objList[i];
+                let field = obj.fieldMap[apiName];
+                labels.push(field.label);
+            }
+            if(ts.length == labels.length){
+                word.label = labels.join(".");
+            }
+        }
+        
+    }
+
+    return words;
+}
+Translater.prototype.translateToName = function(objMap, targetObj){
+    let obj = objMap[targetObj];
+    let labelMap = {};
+    for(let fd of obj.fields){
+        labelMap[fd.label] = fd;
+    }
+
+    let words = [];
+    let labels = [];
+    for(let label in labelMap){
+        let labelWord = `(${label.replaceAll("(","\\(").replaceAll(")","\\)")})`;
+        if(label.indexOf(" ") < 0){
+            labels.push(labelWord);
+        }else{
+            labels.unshift(labelWord);
+        }
+    }
+    labels.sort(function(a, b){
+        if(a.indexOf(" ") < 0){
+            return b.length - a.length;
+        }else{
+            return 1;
+        }
+    });
+
+    let regStr = labels.join("|");
+    
+    let reg = new RegExp(regStr, "g");
+    let r = reg.exec(this.txt);
+    while (r != null){
+        words.push({word:r[0], index:r.index});
+        r = reg.exec(this.txt);
+    }
+    
+    for(let word of words){
+        word.name = labelMap[word.word].name;
+    }
+    return words;
+}
+Translater.prototype.getTransWords = function(){
+    let valueReg = /[a-zA-Z_0-9\$\.]+/gi;
+    let words = [];
+    let r = valueReg.exec(this.txt);
+    while (r != null){
+        words.push({word:r[0], index:r.index});
+        r = valueReg.exec(this.txt);
+    }
+    return words;
+}
+Translater.prototype.preparTransInfo = function(objMap){
+    // key:apiname, value:{label:xxx,objName:xxx}
+    let transMap = new Map();
+    for(const objName in objMap){
+        let obj = objMap[objName];
+        for(const field of obj.fields){
+            if(transMap.has(field.name)){
+                let v = transMap.get(field.name);
+                if(Array.isArray(v)){
+                    v.push({label:field.label,objName:obj.name});
+                }else{
+                    let newV = [];
+                    newV.push(v);
+                    newV.push({label:field.label,objName:obj.name});
+                    transMap.set(field.name, newV);
+                }
+            }else{
+                transMap.set(field.name, {label:field.label,objName:obj.name});
+            }
+        }
+    }
+    return transMap;
+}
 
 var SQLWrapper = function(sql){
     this.sql = sql;
@@ -1003,10 +1124,6 @@ SQLWrapper.prototype.translate = function(objMap){
         let ts = word.word.split(".");
         if(ts.length==1){
             let labels = transMap.get(word.word);
-            if(word.word=="Website"){
-                debugger;
-            }
-            console.log(word.word);
             if(labels){
                 if(Array.isArray(labels)){
                     for(let label of labels){
@@ -1037,7 +1154,6 @@ SQLWrapper.prototype.translate = function(objMap){
             }
             if(ts.length == labels.length){
                 word.label = labels.join(".");
-                debugger;
             }
         }
         

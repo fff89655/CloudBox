@@ -136,7 +136,7 @@ var vue = new Vue({
               appData.errMsg = JSON.stringify(r) ;
               setTimeout(() => {
                 appData.errMsg = null;
-              }, 1000);
+              }, 3000);
             });
         }else{
             SalesforceAPI.requestCreateData(appData.selectObj, JSON.stringify(appData.recordData) ,function(r){
@@ -156,7 +156,7 @@ var vue = new Vue({
                 appData.errMsg = JSON.stringify(r) ;
                 setTimeout(() => {
                   appData.errMsg = null;
-                }, 1000);
+                }, 3000);
             });
         }
     },
@@ -315,6 +315,8 @@ var vue = new Vue({
                 continue;
             }
             if(types.indexOf(item.field.type) >= 0){
+                item.show = true;
+            }else if(types.indexOf("mustInput") >= 0 && item.field.mustInput){
                 item.show = true;
             }else{
                 item.show = false;

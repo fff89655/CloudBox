@@ -1,0 +1,54 @@
+<html>
+    <head>
+        <title>検索</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link rel="stylesheet" href="../../lib/w3.css">
+        <script src="../../lib/jquery.js"></script>
+        <script src="../../lib/vue.js"></script>
+        <script src="../../js/base.js"></script>
+
+        <link rel="stylesheet" href="/r/base.css">
+
+        <script src="../cmpLib/Combobox/Combobox.js" ></script>
+        <link rel="stylesheet" href="../cmpLib/Combobox/Combobox.css">
+
+        <script src="../cmpLib/ResizeHandle/ResizeHandleX.js" ></script>
+        <script src="../cmpLib/ResizeHandle/ResizeHandleY.js" ></script>
+        <link rel="stylesheet" href="../cmpLib/ResizeHandle/ResizeHandle.css">
+        
+        <link rel="stylesheet" href="main.css">
+    </head>
+    <body>
+        <div id="app" style="display:none;">
+            <table class="frameTable">
+                <colgroup>
+                    <col style="width:50%">
+                    <col style="width:50%">
+                </colgroup>
+                <tr style="height:50px;">
+                    <td colspan="2" class="btns" style="vertical-align:middle;padding-left: 10px;">
+                        <button @click="onNameToLabelClick">name to label</button>
+                        <button @click="onLabelToNameClick">label to name</button>
+                        object:<combobox v-bind:items="objItems" @onchange="objSelect"></combobox>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="editorTd" style="width:50%;">
+                        <textarea class="fullSize" v-model="txt"></textarea>
+                    </td>
+                    <td>
+                        <div class="btns" style="height:40px;">
+                            <button @click="onCopyClick">copy</button>
+                        </div>
+                        <div style="overflow:auto;height:calc(100% - 40px);max-height:100%;">
+                            <div style="white-space: pre-wrap;" v-html="htmlResult">
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+        <script src="main.js"></script>
+    </body>
+</html>

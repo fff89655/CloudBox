@@ -61,7 +61,8 @@
         </div>
         <div class="titleBtns" style="padding-top: 15px;">
             <div style="float:left;margin:0 20px;">
-                <check-group :items="['string','double','boolean','picklist','datetime','reference']"
+                <check-group :items="['string','double','boolean','picklist','datetime','reference','mustInput']"
+                    :multiselect="true"
                     @onchange="onShowTypeChange"></check-group>
             </div>
             <div style="float:left;">
