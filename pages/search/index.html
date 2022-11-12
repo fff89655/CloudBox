@@ -104,9 +104,12 @@
                             </tr>
                             <tr >
                                 <td>
-                                    <div ref="matrixParent" style="width:100%;height:100%;overflow:auto;">
-                                        <div id="dataGrid" style="display: none;">
-                                        </div>
+                                    <div v-if="appData.datas && appData.datas.length==0" style="width:100%;height:100%;overflow:auto;">
+                                        no search result
+                                    </div>
+                                    <div ref="matrixParent" v-show="appData.datas==null || appData.datas.length>0" style="width:100%;height:100%;overflow:auto;">
+                                        <!-- <div id="dataGrid" style="display: none;">
+                                        </div> -->
                                         <matrix ref="matrix" style="height:100%"></matrix>
                                     </div>
                                 </td>

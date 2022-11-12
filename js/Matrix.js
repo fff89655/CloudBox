@@ -234,6 +234,12 @@ class Cmp {
     endPaint(ctx) {
         ctx.restore();
     }
+    clear() {
+        this.ctx.save();
+        this.ctx.fillStyle = "rgba(255,255,255,1)";
+        this.ctx.fillRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
+        this.ctx.restore();
+    }
     drawVerticalLine(ctx, left, top, width) {
         ctx.fillRect(left, top, 1, width);
     }

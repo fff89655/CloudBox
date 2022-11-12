@@ -48,6 +48,9 @@ Vue.component('matrix', {
         },
         clearEdit: function(){
             this.matrix.clearEdit();
+        },
+        clear: function(){
+            this.matrix.clear();
         }
     }
 })

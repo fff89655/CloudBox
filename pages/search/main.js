@@ -4,7 +4,7 @@ SalesforceAPI.LoginInfors = parentLoginInfor.LoginInfors;
 SalesforceAPI.LoginInfor = parentLoginInfor.LoginInfor;
 
 
-var appData = {datas:[], selectItems:[], input:{objName:null}, searchObj:null, objItems:[],
+var appData = {datas:null, selectItems:[], input:{objName:null}, searchObj:null, objItems:[],
                fieldSelect:{cmpName:null, show:false, fieldSelectProp:{object:null,selectedFieldNames:null,width:800,height:500},},
                upsert:{show:false},
                matrix:{width:0, height:0},
@@ -163,13 +163,14 @@ function init(){
                 }
         
                 if(showtype == 'table'){
-
                     // $("#sqlDiv").css("height","100px");
 
                     let p = me.$refs.matrixParent;
-
+                    
                     if(appData.datas.length > 0){
                         me.$refs.matrix.showObjDataWidthResize(colHeaders, appData.datas, p.clientWidth, p.clientHeight);
+                    }else{
+                        me.$refs.matrix.clear();
                     }
                     window.dataObjName = objectName;
 
