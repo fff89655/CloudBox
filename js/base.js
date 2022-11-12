@@ -1274,33 +1274,33 @@ ComFun.toSFDCDataTimeFormat = function(dateStr){
 }
 
 
-window.resetIcon = function(){
-  var src = $(".tabFrame:visible")[0].contentWindow.location.href;
-  var sid = $(".menuDiv.selected").attr("id");
-  var nid = null;
-  if(src.indexOf("startPage/index") > 0){
-    nid = "search";
-  }else if(src.indexOf("objectRelations/index") > 0){
-    nid = "data";
-  }else if(src.indexOf("objDef/index") > 0){
-    nid = "data";
-  }else if(src.indexOf("record/index") > 0){
-    nid = "record";
-  }else if(src.indexOf("search/index") > 0){
-    nid = "sql";
-  }else if(src.indexOf("config/index") > 0){
-    nid = "config";
-  } 
+// window.resetIcon = function(){
+//   var src = $(".tabFrame:visible")[0].contentWindow.location.href;
+//   var sid = $(".menuDiv.selected").attr("id");
+//   var nid = null;
+//   if(src.indexOf("startPage/index") > 0){
+//     nid = "search";
+//   }else if(src.indexOf("objectRelations/index") > 0){
+//     nid = "data";
+//   }else if(src.indexOf("objDef/index") > 0){
+//     nid = "data";
+//   }else if(src.indexOf("record/index") > 0){
+//     nid = "record";
+//   }else if(src.indexOf("search/index") > 0){
+//     nid = "sql";
+//   }else if(src.indexOf("config/index") > 0){
+//     nid = "config";
+//   } 
 
-  if(sid != nid){
-    $(".menuDiv.selected").removeClass("selected");
-    $(`#${nid}`).addClass("selected");
-  }
+//   if(sid != nid){
+//     $(".menuDiv.selected").removeClass("selected");
+//     $(`#${nid}`).addClass("selected");
+//   }
   
-}
+// }
 
-$(()=>{
-  if(window.parent !== window){
-    window.parent.resetIcon();
-  }
-});
+// $(()=>{
+//   if(window.parent !== window){
+//     window.parent.resetIcon();
+//   }
+// });

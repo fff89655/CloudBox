@@ -72,6 +72,7 @@ function g_openTabFromId(id, param){
   tab.click(onTabClick);
   tab.on("auxclick", onTabClick);
   tab.contextmenu(onTabRightClick);
+  tab.data("typeId", id);
 
   
   var iframe = $(`<iframe class="tabFrame" src='${src}${param}' >`);
@@ -102,6 +103,9 @@ function onTabClick(e){
     
     tabEl.addClass("selected");
     iframeEl.show();
+
+    $(".menuDiv.selected").removeClass("selected");
+    $("#" + tabEl.data("typeId")).addClass("selected");
   }
 
 }

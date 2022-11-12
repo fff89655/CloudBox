@@ -28,6 +28,7 @@ iframe {
 .menuDiv:hover {
     background-color: rgb(145, 145, 145);
     cursor: pointer;
+    color:#77776e;
 }
 
 .menuIcon {
