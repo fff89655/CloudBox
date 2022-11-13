@@ -694,7 +694,7 @@ var SalesforceAPI = (function () {
             xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfor.sessionId);
     
             xhr.onload = function () {
-                if (xhr.status == 200 || xhr.status == 204) {
+                if (xhr.status == 201 || xhr.status == 204) {
                     resolve('success'); 
                 } else {
                     resolve('error:' + xhr.responseText); 

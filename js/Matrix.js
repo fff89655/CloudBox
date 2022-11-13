@@ -905,13 +905,13 @@ class MatrixCenterData extends Cmp {
             if (e.key == "Enter") {
                 dispose = true;
                 // @ts-ignore: Unreachable code error
-                cell.setVal($(this).val(), me.matrix);
+                me.setCellValue(cell, $(this).val());
                 me.repaintCell([cell]);
             }
             else if (e.key == "Tab") {
                 dispose = true;
                 // @ts-ignore: Unreachable code error
-                cell.setVal($(this).val(), me.matrix);
+                me.setCellValue(cell, $(this).val());
                 me.repaintCell([cell]);
             }
             else if (e.key == "Escape") {
@@ -925,7 +925,7 @@ class MatrixCenterData extends Cmp {
         inputEl.blur(function () {
             inputEl.remove();
             // @ts-ignore: Unreachable code error
-            cell.setVal($(this).val(), me.matrix);
+            me.setCellValue(cell, $(this).val());
             me.repaintCell([cell]);
             setTimeout(function () { me.matrix.el.focus(); }, 0);
         });

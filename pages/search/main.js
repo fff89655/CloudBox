@@ -168,6 +168,7 @@ function init(){
                     let p = me.$refs.matrixParent;
                     
                     if(appData.datas.length > 0){
+                        me.colHeaders = colHeaders;
                         me.$refs.matrix.showObjDataWidthResize(colHeaders, appData.datas, p.clientWidth, p.clientHeight);
                     }else{
                         me.$refs.matrix.clear();
@@ -211,6 +212,28 @@ function init(){
                 alert(JSON.stringify(errmsg));
             });
         
+        },
+        addRow:function(){
+            if(!appData.datas) return;
+            
+            let p = this.$refs.matrixParent;
+                    
+            let rowNum = parseInt(prompt("input row num."));
+
+            let addRows = [];
+            for(let i=0 ; i<rowNum ; i++){
+                let row = {};
+                for(let prop of this.colHeaders){
+                    row[prop] = null;
+                }
+                addRows.push(row);
+            }
+
+            if(appData.datas.length > 0){
+                this.$refs.matrix.showObjDataWidthResize(this.colHeaders, addRows, p.clientWidth, p.clientHeight);
+            }else{
+                this.$refs.matrix.clear();
+            }
         },
         onSqlClick:function(node){
             editor.setValue(node.sql ? node.sql:"");
@@ -339,11 +362,18 @@ function downloadCSV(colHeaders, datas){
 async function saveToSalesforce(updateRecList){
     let errMsg = [];
     for(let updateRec of updateRecList){
-        let Id = updateRec.Id;
-        delete updateRec.Id;
-        let result = await SalesforceAPI.requestSaveDataSync(window.dataObjName, Id, JSON.stringify(updateRec));
-        if(result != "success"){
-            errMsg.push(result);
+        if(updateRec.Id){
+            let Id = updateRec.Id;
+            delete updateRec.Id;
+            let result = await SalesforceAPI.requestSaveDataSync(window.dataObjName, Id, JSON.stringify(updateRec));
+            if(result != "success"){
+                errMsg.push(result);
+            }
+        }else{
+            let result = await SalesforceAPI.requestCreateDataSync(window.dataObjName, JSON.stringify(updateRec));
+            if(result != "success"){
+                errMsg.push(result);
+            }
         }
     }
     if(errMsg.length > 0){
