@@ -216,10 +216,10 @@ class Cmp {
     firePaint(ctx) {
         ctx.save();
         ctx.translate(this.rect.x, this.rect.y);
-        this.paint(ctx);
         for (const child of this.childCmps) {
             child.firePaint(ctx);
         }
+        this.paint(ctx);
         ctx.restore();
     }
     repaint() {
@@ -261,7 +261,7 @@ class Cmp {
     fireEvent(eventName, param = null) {
         if (eventName == "mousedown") {
             let p = Point.init(param.offsetX, param.offsetY);
-            this.fireMouseDown(p, param.shiftKey, param.ctrlKey);
+            this.fireMouseDown(p, param.shiftKey, param.ctrlKey, param.button == "1");
             return;
         }
         else if (eventName == "mousemove") {
@@ -291,15 +291,15 @@ class Cmp {
     }
     onMouseDown(p, shift, ctrl) {
     }
-    fireMouseDown(p, shift, ctrl) {
+    fireMouseDown(p, shift, ctrl, middelButton) {
         if (this.config.enableMouseDown != true)
             return;
-        this.onMouseDown(p, shift, ctrl);
+        this.onMouseDown(p, shift, ctrl, middelButton);
         this.mouseDownPoint = p;
         this.dragLastPoint = p;
         for (let c of this.childCmps) {
             if (c.rect.containPoint(p)) {
-                c.fireMouseDown(Point.init(p.x - c.rect.x, p.y - c.rect.y), shift, ctrl);
+                c.fireMouseDown(Point.init(p.x - c.rect.x, p.y - c.rect.y), shift, ctrl, middelButton);
             }
         }
     }
@@ -538,6 +538,7 @@ class Matrix extends Cmp {
     }
     // 数组里面obj显示
     showObjData(headers, datas) {
+        this.centerData.init();
         let dataList = [];
         for (let row of datas) {
             let rowList = [];
@@ -567,18 +568,17 @@ class Matrix extends Cmp {
     }
     reLayout(resetHeader = false) {
         if (resetHeader == false) {
-            this.centerData.reLayout();
-            this.row0.reLayout();
+            this.centerData.reLayout(); // 计算每个单元格的大小
+            this.row0.reLayout(); // 计算每一列的宽度
         }
-        else {
-            this.row0.resetCanvasSize();
-        }
-        this.col0.reLayout();
-        this.centerData.reComputeCellPosition();
+        this.col0.reLayout(); // 计算每一行的大小
+        this.centerData.reComputeCellPosition(); // 计算每个单元格的位置
         let st = this.setting;
         this.row0.rect = Rect.init(st.col0Width, 0, this.rect.width - st.col0Width - this.scrollbarV.getWidth(), st.row0Height);
         this.col0.rect = Rect.init(0, st.row0Height, st.col0Width, this.rect.height - st.row0Height - this.scrollbarH.getHeight());
         this.centerData.rect = Rect.init(st.col0Width, st.row0Height, this.rect.width - st.col0Width - this.scrollbarV.getWidth(), this.rect.height - st.row0Height - this.scrollbarH.getHeight());
+        this.row0.resetCanvasSize();
+        this.col0.resetCanvasSize();
         if (this.scrollbarV.isVisible()) {
             this.scrollbarV.rect = Rect.init(this.col0.rect.width + this.centerData.rect.width - 1, 1, st.scrollbarWidth, this.rect.height - 2);
         }
@@ -629,17 +629,10 @@ class Matrix extends Cmp {
 class MatrixCenterData extends Cmp {
     constructor(matrix) {
         super();
-        this.config.enableMouseDown = true;
-        this.config.enableMouseMove = true;
-        this.config.enableMouseUp = true;
-        this.config.enableMouseDrag = true;
+        this.init();
         this.matrix = matrix;
         this.canvasEl = document.createElement("canvas");
         this.canvasCtx = this.canvasEl.getContext("2d");
-        this.selectedCells = [];
-        this.selectStartCell = null;
-        this.mouseDownCell = null;
-        this.editedCells = [];
         // document.body.appendChild(this.canvasEl);
         let me = this;
         this.on("paste", (e) => {
@@ -648,10 +641,28 @@ class MatrixCenterData extends Cmp {
             }
         });
     }
-    onMouseDown(p, shift, ctrl) {
+    init() {
+        this.config.enableMouseDown = true;
+        this.config.enableMouseMove = true;
+        this.config.enableMouseUp = true;
+        this.config.enableMouseDrag = true;
+        this.selectedCells = [];
+        this.selectStartCell = null;
+        this.mouseDownCell = null;
+        this.editedCells = [];
+    }
+    onMouseMove(p, shift, ctrl) {
+        this.matrix.setCursor("default");
+    }
+    onMouseDown(p, shift, ctrl, middelButton) {
         if (this.matrix.spaceDown) {
             this.mouseDownScrollTop = this.matrix.scrollTop;
             this.mouseDownScrollLeft = this.matrix.scrollLeft;
+        }
+        else if (middelButton == true) {
+            this.mouseDownScrollTop = this.matrix.scrollTop;
+            this.mouseDownScrollLeft = this.matrix.scrollLeft;
+            this.middleDown = true;
         }
         else {
             let cell = this.getCellByPoint(p.x, p.y);
@@ -675,7 +686,7 @@ class MatrixCenterData extends Cmp {
         this.inputCellValue(cell);
     }
     onMouseDrag(offsetPoint, dragOffsetPoint, p, shift, ctrl) {
-        if (this.matrix.spaceDown) {
+        if (this.matrix.spaceDown || this.middleDown == true) {
             this.matrix.scrollTo(this.mouseDownScrollTop - offsetPoint.y, this.mouseDownScrollLeft - offsetPoint.x);
         }
         else {
@@ -695,6 +706,7 @@ class MatrixCenterData extends Cmp {
     }
     onMouseUp() {
         this.mouseDownCell = null;
+        this.middleDown = false;
     }
     onkeyDown(keyCode, shift, ctrl) {
         let returnVal = false;
@@ -789,7 +801,9 @@ class MatrixCenterData extends Cmp {
         let rows = v.split(/\n|\r\n/);
         let values = [];
         for (let row of rows) {
-            values.push(row.split("\t"));
+            if (row) {
+                values.push(row.split("\t"));
+            }
         }
         if (values.length == 1 && values[0].length == 1) {
             let v = values[0][0];
@@ -856,7 +870,7 @@ class MatrixCenterData extends Cmp {
         let cells = this.dataCells;
         let lastRow = cells[cells.length - 1];
         let lastCell = lastRow[lastRow.length - 1];
-        this.canvasSize = Size.init(lastCell.rect.x + lastCell.rect.width, lastCell.rect.y + lastCell.rect.height);
+        this.canvasSize = Size.init(lastCell.rect.x + lastCell.rect.width + 1, lastCell.rect.y + lastCell.rect.height + 1);
         this.canvasEl.setAttribute("width", this.canvasSize.width);
         this.canvasEl.setAttribute("height", this.canvasSize.height);
     }
@@ -1320,7 +1334,12 @@ class MatrixRow0 extends Cmp {
     }
     resetCanvasSize() {
         let lastHeaderCell = this.row0Cells[this.row0Cells.length - 1];
-        this.canvasSize = Size.init(lastHeaderCell.rect.x + lastHeaderCell.rect.width, this.matrix.setting.row0Height);
+        if (lastHeaderCell.rect.x + lastHeaderCell.rect.width >= this.rect.width) {
+            this.canvasSize = Size.init(lastHeaderCell.rect.x + lastHeaderCell.rect.width, this.matrix.setting.row0Height);
+        }
+        else {
+            this.canvasSize = Size.init(this.rect.width, this.matrix.setting.row0Height);
+        }
         this.canvasEl.setAttribute("width", this.canvasSize.width);
         this.canvasEl.setAttribute("height", this.canvasSize.height);
     }
@@ -1351,13 +1370,19 @@ class MatrixRow0 extends Cmp {
             const cell = this.row0Cells[i];
             this._drawCell(ctx, cell, i);
         }
-        this.beginPaint(ctx, Point.init(0, 0));
-        if (this.dragingRect != null) {
-            ctx.fillStyle = "black";
-            ctx.globalAlpha = 0.5;
-            ctx.fillRect(this.dragingRect.x, this.dragingRect.y, this.dragingRect.width, this.dragingRect.height);
-            ctx.globalAlpha = 1.0;
+        let lastCell = this.row0Cells[this.row0Cells.length - 1];
+        let lastCellRight = lastCell.rect.x + lastCell.rect.width;
+        if (lastCellRight < this.rect.width) {
+            ctx.fillStyle = this.matrix.setting.headerColor;
+            ctx.fillRect(lastCellRight + 2, 2, this.rect.width - lastCellRight - 3, this.matrix.setting.row0Height - 4);
         }
+        this.beginPaint(ctx, Point.init(0, 0));
+        // if(this.dragingRect != null){
+        //   ctx.fillStyle = "black";
+        //   ctx.globalAlpha = 0.5;
+        //   ctx.fillRect(this.dragingRect.x, this.dragingRect.y, this.dragingRect.width, this.dragingRect.height);
+        //   ctx.globalAlpha = 1.0;
+        // }
         this.endPaint(ctx);
     }
     _drawCell(ctx, cell, index) {
@@ -1570,8 +1595,16 @@ class MatrixCol0 extends Cmp {
             cell.rect = Rect.init(0, offsetHeight, this.matrix.setting.col0Width, lineHeight);
             offsetHeight += lineHeight;
         }
+        this.resetCanvasSize();
+    }
+    resetCanvasSize() {
         let lastHeaderCell = this.col0Cells[this.col0Cells.length - 1];
-        this.canvasSize = Size.init(this.matrix.setting.col0Width, lastHeaderCell.rect.y + lastHeaderCell.rect.height);
+        if (lastHeaderCell.rect.y + lastHeaderCell.rect.height >= this.rect.height) {
+            this.canvasSize = Size.init(this.matrix.setting.col0Width, lastHeaderCell.rect.y + lastHeaderCell.rect.height);
+        }
+        else {
+            this.canvasSize = Size.init(this.matrix.setting.col0Width, this.rect.height);
+        }
         this.canvasEl.setAttribute("width", this.canvasSize.width);
         this.canvasEl.setAttribute("height", this.canvasSize.height);
     }

@@ -223,17 +223,13 @@ function init(){
             let addRows = [];
             for(let i=0 ; i<rowNum ; i++){
                 let row = {};
-                for(let prop of this.colHeaders){
+                for(let prop of this.selectItems){
                     row[prop] = null;
                 }
                 addRows.push(row);
             }
 
-            if(appData.datas.length > 0){
-                this.$refs.matrix.showObjDataWidthResize(this.colHeaders, addRows, p.clientWidth, p.clientHeight);
-            }else{
-                this.$refs.matrix.clear();
-            }
+            this.$refs.matrix.showObjDataWidthResize(this.selectItems, addRows, p.clientWidth, p.clientHeight);
         },
         onSqlClick:function(node){
             editor.setValue(node.sql ? node.sql:"");

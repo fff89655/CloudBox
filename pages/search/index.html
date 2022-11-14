@@ -62,20 +62,14 @@
             <table class="frameTable noBorder">
                 <tr>
                     <td :style="{width:size.sqlListWidth+'px'}">
-                        <table class="frameTable noBorder">
-                            <tr>
-                                <td style="height:50%;">
-                                    <tree-grid title="sql" :editable="true" v-bind:tree_data="sqlList.sqlList" 
-                                    :menus="sqlList.sqlMenu"
-                                    @onrowclick="onSqlClick" @onaddchild="onAddSql" @ondeletechild="onDeleteSql" @onrename="onRenameSql"></tree-grid>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="height:50%;">
-                                    <tree-grid title="history" ref="historyTree" :editable="false" v-bind:tree_data="sqlList.historyList" @onrowclick="onSqlClick"></tree-grid>
-                                </td>
-                            </tr>
-                        </table>
+                        <div style="height:50%;overflow-y:auto;overflow-x:clip">
+                            <tree-grid title="sql" :editable="true" v-bind:tree_data="sqlList.sqlList" 
+                            :menus="sqlList.sqlMenu"
+                            @onrowclick="onSqlClick" @onaddchild="onAddSql" @ondeletechild="onDeleteSql" @onrename="onRenameSql"></tree-grid>
+                        </div>
+                        <div style="height:50%;overflow-y:auto;overflow-x:clip">
+                            <tree-grid title="history" ref="historyTree" :editable="false" v-bind:tree_data="sqlList.historyList" @onrowclick="onSqlClick"></tree-grid>
+                        </div>
                     </td>
                     <td style="width:4;">
                         <resizehandle-x @onresize="onXResize"></resizehandle-x>
@@ -105,10 +99,10 @@
                             </tr>
                             <tr >
                                 <td>
-                                    <div v-if="appData.datas && appData.datas.length==0" style="width:100%;height:100%;overflow:auto;">
+                                    <!-- <div v-if="appData.datas && appData.datas.length==0" style="width:100%;height:100%;overflow:auto;">
                                         no search result
-                                    </div>
-                                    <div ref="matrixParent" v-show="appData.datas==null || appData.datas.length>0" style="width:100%;height:100%;overflow:auto;">
+                                    </div> -->
+                                    <div ref="matrixParent" style="width:100%;height:100%;overflow:auto;">
                                         <!-- <div id="dataGrid" style="display: none;">
                                         </div> -->
                                         <matrix ref="matrix" style="height:100%"></matrix>
