@@ -68,7 +68,7 @@ TreeNode.prototype.getAllGenerationsLoop = function(list){
     }
 }
 TreeNode.prototype.createChilds = function(model, component){
-    this.model = {title:"DictMenu",children:[model]};
+    this.model = {title:model.title,children:model.children};
     this.createChildsLoop(this.model, component);
     this.refreshLeftPadding();
 }
@@ -265,16 +265,16 @@ TreeNode.prototype.mouseLeave = function(){
 
 Vue.component('tree-grid', {
     template: `
-<div class="treeRoot noselect" v-on:contextmenu.prevent="">
+<div class="treeRoot noselect" v-on:contextmenu.prevent="onMenu($event,null)">
     <div v-if="editable || menus>0" id="tabMenu" class="w3-dropdown-content w3-bar-block w3-border" style="z-index:999" 
         @mouseleave="onMenuLeave"
         :style="menuStyle">
         <a v-if="editable" href="#" class="w3-bar-item w3-button" @click="addChild">add Child</a>
-        <a v-if="editable" href="#" class="w3-bar-item w3-button" @click="deleteNode">remove</a>
-        <a v-if="editable" href="#" class="w3-bar-item w3-button" @click="renameNode">rename Node</a>
-        <a v-for="m in menus" href="#" class="w3-bar-item w3-button" @click="menuClick(m)">{{m.label}}</a>
+        <a v-if="editable" v-show="!onlyAdd" href="#" class="w3-bar-item w3-button" @click="deleteNode">remove</a>
+        <a v-if="editable" v-show="!onlyAdd" href="#" class="w3-bar-item w3-button" @click="renameNode">rename Node</a>
+        <a v-for="m in menus"  v-show="!onlyAdd" href="#" class="w3-bar-item w3-button" @click="menuClick(m)">{{m.label}}</a>
     </div>
-    <div>
+    <!--<div>
         <table class="treeTitle" style="width:100%;">
             <tr>
                 <td class="treeTitleContent">{{title}}</td>
@@ -284,20 +284,20 @@ Vue.component('tree-grid', {
                 </td>
             </tr>
         </table>
-    </div>
-    <div v-for="node in treeNodeList" 
+    </div>-->
+    <div class="nodeRow" v-for="node in treeNodeList" 
         v-bind:class="'treeNode' + (node.children.length == 0 ? ' leafNode':'') + (node.selected? ' selectedNode': '')" 
         v-show="node.visible && node.isAllParentVisible()"
         v-on:mousedown="treeNodeMouseDown($event, node)"
         v-on:mouseover="treeNodeMouseOver(node)"
         v-on:mouseleave="treeNodeMouseLeave(node)"
         v-on:click="rowClick(node)"
-        v-on:contextmenu.prevent="onMenu($event,node)">
+        v-on:contextmenu.prevent.stop="onMenu($event,node)">
         <div class="treeHandle"
         v-bind:style="{paddingLeft: node.paddingLeft + 'px'}" >
-            <span v-if="node.children.length == 0">〇</span>
-            <span v-if="node.children.length != 0 && node.toggleFlg == true" v-on:click="toggleClick(node)">▷</span>
-            <span v-if="node.children.length != 0 && node.toggleFlg == false" v-on:click="toggleClick(node)">▼</span>
+            <span v-if="node.children.length == 0">&nbsp;</span>
+            <span v-if="node.children.length != 0 && node.toggleFlg == true" v-on:click.stop="toggleClick(node)">▷</span>
+            <span v-if="node.children.length != 0 && node.toggleFlg == false" v-on:click.stop="toggleClick(node)">▼</span>
             <div class="treeNodeName">
                 <span>{{node.model.title}}</span>
             </div>
@@ -313,14 +313,27 @@ Vue.component('tree-grid', {
     props:["title","tree_data", "columns", "editable", "menus"],
     //menus: [{label:"ll",fun:fun},{...}]
     data : function(){
-        return {treeNodeList:[], rootNode:{}, selectedNode:{},menuStyle:{display:"none",top:"100px",left:"0px"}};
+        return {treeNodeList:[], rootNode:{}, selectedNode:{},menuStyle:{display:"none",top:"100px",left:"0px"},
+                showRoot:true, onlyAdd:false};
     },
     created:function(){
         if(this.editable!=false){
             this.editable = true;
         }
         // ChromeAPI.saveLocalData("SQLListMap",{title:"sql");
-        this.loadTreeData(this.tree_data);
+        if(this.tree_data){
+            this.loadTreeData(this.tree_data);
+        }
+    },
+    watch: { 
+        tree_data: function(newVal, oldVal) {
+            if(this.editable!=false){
+                this.editable = true;
+            }
+            if(this.tree_data){
+                this.loadTreeData(this.tree_data);
+            }
+        }
     },
     methods:{
         loadTreeData : function(data){
@@ -330,8 +343,7 @@ Vue.component('tree-grid', {
             this.treeNodeList = this.rootNode.getAllGenerations();
             
             if(this.rootNode.children.length > 0){
-                for (let index = 0; index < this.rootNode.children[0].children.length; index++) {
-                    const node = this.rootNode.children[0].children[index];
+                for(let node of this.rootNode.children){
                     node.collapseAll();
                 }
             }
@@ -406,7 +418,12 @@ Vue.component('tree-grid', {
             this.$emit('onrename', node);
         },
         onMenu: function(e, node){
-            node.click();
+            if(node != null){
+                node.click();
+                this.onlyAdd = false;
+            }else{
+                this.onlyAdd = true;
+            }
             this.currentNode = node;
             this.menuStyle.top = e.clientY-15 + "px";
             this.menuStyle.left = e.clientX-15 +  "px";
@@ -416,7 +433,9 @@ Vue.component('tree-grid', {
             this.menuStyle.display = "none";
         },
         menuClick:function(m){
-            m.fun(this.currentNode);
+            if(m.eventName){
+                this.$emit(m.eventName, this.currentNode);
+            }
             this.menuStyle.display = "none";
         }
       }

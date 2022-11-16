@@ -37,6 +37,9 @@
         <script src="../cmpLib/ResizeHandle/ResizeHandleY.js" ></script>
         <link rel="stylesheet" href="../cmpLib/ResizeHandle/ResizeHandle.css">
         
+        <script src="../cmpLib/SqlPanel/SqlPanel.js" ></script>
+        <link rel="stylesheet" href="../cmpLib/SqlPanel/SqlPanel.css">
+
         <!-- Shift-JIS encoder -->
         <script src="../../lib/encoding.js"></script>
 
@@ -47,8 +50,9 @@
 
             <div class="mask" :class="{hide:!(fieldSelect.show || upsert.show)}"></div>
             <div class="fieldSelect" :class="fieldSelect.show?'':'hide'">
-                <div>
+                <div class="btns">
                     <button @click="fieldSelectOK">search</button>
+                    <button @click="fieldSelectCANCLE">cancle</button>
                     object:<combobox v-bind:items="objItems" @onchange="objSelect"></combobox>
                 </div>
                 <div style="padding-top: 6px;">
@@ -62,20 +66,45 @@
             <table class="frameTable noBorder">
                 <tr>
                     <td :style="{width:size.sqlListWidth+'px'}">
-                        <div style="height:50%;overflow-y:auto;overflow-x:clip">
-                            <tree-grid title="sql" :editable="true" v-bind:tree_data="sqlList.sqlList" 
-                            :menus="sqlList.sqlMenu"
-                            @onrowclick="onSqlClick" @onaddchild="onAddSql" @ondeletechild="onDeleteSql" @onrename="onRenameSql"></tree-grid>
-                        </div>
-                        <div style="height:50%;overflow-y:auto;overflow-x:clip">
-                            <tree-grid title="history" ref="historyTree" :editable="false" v-bind:tree_data="sqlList.historyList" @onrowclick="onSqlClick"></tree-grid>
-                        </div>
+                        <sqlpanel ref="sqlPanel" @onsqlclick="onSqlClick" @onsaveto="onSaveSql"></sqlpanel>
                     </td>
                     <td style="width:4;">
                         <resizehandle-x @onresize="onXResize"></resizehandle-x>
                     </td>
-                    <td>
+                    <td style="vertical-align:top;">
                         <table class="frameTable noBorder" style="width:100%;height:100%;">
+                            <tr style="height:40px;">
+                                <td class="btns" style="width:100%;padding-left:5px;">
+                                    <button v-on:click="search">search</button>
+                                    <button v-on:click="save">save</button>
+                                    <button id="createSql" v-on:click="createSql">createSql</button>
+                                    <button v-on:click="showAsLabel">label</button>
+                                    <button v-on:click="downloadCSVClick">exportCSV</button>
+                                    <button v-on:click="upsertCSVClick">upsertCSV</button>
+                                    <button v-on:click="addRow">addRow</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="vertical-align:top;">
+                                    <div>
+                                        <div tabId="sql" @click="onTabClick($event)" class="tab selected">SQL</div>
+                                        <div tabId="data" @click="onTabClick($event)" class="tab">DATA</div>
+                                    </div>
+                                    <div ref="matrixParent" class="tabBody" style="overflow: hidden;" >
+                                        <div :class="{hide:showTabId!='sql'}" class="editorTd" id="sqlDiv">
+                                            <div id="editor" style="height:100%;">SELECT Id,Name FROM User</div>
+                                        </div>
+                                        <div :class="{hide:showTabId!='data'}">
+                                            <div v-if="datas && datas.length == 0">no search result</div>
+                                            <div style="width:100%;height:100%;overflow:auto;">
+                                                <matrix ref="matrix" style="height:100%"></matrix>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                        <!-- <table class="frameTable noBorder" style="width:100%;height:100%;">
                             <tr style="height:40px;">
                                 <td class="btns" style="width:100%;padding-left:5px;">
                                     <button v-on:click="search">search</button>
@@ -99,17 +128,12 @@
                             </tr>
                             <tr >
                                 <td>
-                                    <!-- <div v-if="appData.datas && appData.datas.length==0" style="width:100%;height:100%;overflow:auto;">
-                                        no search result
-                                    </div> -->
                                     <div ref="matrixParent" style="width:100%;height:100%;overflow:auto;">
-                                        <!-- <div id="dataGrid" style="display: none;">
-                                        </div> -->
                                         <matrix ref="matrix" style="height:100%"></matrix>
                                     </div>
                                 </td>
                             </tr>
-                        </table>
+                        </table> -->
             
                     </td>
                 </tr>

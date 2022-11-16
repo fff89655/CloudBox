@@ -41,3 +41,31 @@ input[type=text]{
     width:100%;
     height:100%;
 }
+.tab:first-child{
+    border-left:1px solid #0075f5;
+}
+.tab{
+    float:left;
+    width:150px;
+    height:40px;
+    line-height: 40px;
+    color:#0075f5;
+    border:1px solid #0075f5;
+    border-left: none;
+    border-bottom: none;
+    cursor:pointer;
+    text-align: center;
+    background-color: #e8f7ff;
+}
+.tab.selected{
+    background-color: white;
+    border-bottom: 1px solid #d0eefe;
+}
+.tabBody{
+    border:1px solid #0075f5;
+    clear:both;
+    height:calc(100% - 41px);
+}
+.hide{
+    display:none;
+}

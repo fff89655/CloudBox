@@ -1159,7 +1159,8 @@ class MatrixCenterData extends Cmp {
         return this.getCell(rowIndex, colIndex);
     }
     setCellValue(cell, val) {
-        if (cell.text == val)
+        let v = cell.text === null ? "" : cell.text + "";
+        if (v == val)
             return;
         cell.setVal(val, this.matrix);
         this.editedCells.push(cell);

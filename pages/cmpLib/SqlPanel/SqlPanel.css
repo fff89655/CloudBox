@@ -1,0 +1,23 @@
+.sqlPanel{
+    width:100%;
+    height:100%;
+    border:1px solid black;
+}
+.sqlPanel .tabItem:first-child{
+    border-right:1px solid #0075f5;
+}
+.sqlPanel .tabItem{
+    float:left;
+    width:50%;
+    height:40px;
+    line-height: 40px;
+    color:#0075f5;
+    border-bottom: 1px solid #0075f5;
+    cursor:pointer;
+    text-align: center;
+    background-color: #e8f7ff;
+}
+.sqlPanel .selected{
+    border-bottom: 1px solid #d0eefe;
+    background-color: white;
+}

@@ -8,8 +8,8 @@ var appData = {datas:null, selectItems:[], input:{objName:null}, searchObj:null,
                fieldSelect:{cmpName:null, show:false, fieldSelectProp:{object:null,selectedFieldNames:null,width:800,height:500},},
                upsert:{show:false},
                matrix:{width:0, height:0},
-               sqlList:{sqlList:null,historyList:null,sqlMenu:[{label:"save to",fun:saveSqlToTree}]},
-               size:{editorHeight:300,sqlListWidth:200}
+               size:{sqlListWidth:300},
+               showTabId:"sql"
               };
 var objMap = null;
 
@@ -90,6 +90,7 @@ function init(){
         },
         createSql:function(){
             this.fieldSelect.show = true;
+            $(".fieldSelect").css("left", $("#createSql").offset().left + "px");
         },
         fieldSelectOK:function(){
             let selectedFields = this.$refs.fieldSelect.getSelected();
@@ -97,6 +98,9 @@ function init(){
             let sql = `SELECT\n  ${selectedFields.join(",\n  ")}\nFROM ${appData.input.objName}`;
             editor.setValue(sql);
             editor.focus();
+            this.fieldSelect.show = false;
+        },
+        fieldSelectCANCLE:function(){
             this.fieldSelect.show = false;
         },
         showAsLabel:function(){
@@ -125,6 +129,8 @@ function init(){
         
             let me = this;
         
+            me.showTab("data");
+
             SalesforceAPI.requestData(sql , function(r){
                 let datas = [];
                 let objectName = null;
@@ -176,6 +182,7 @@ function init(){
                     window.dataObjName = objectName;
 
                     me.updateHistory(objectName);
+
                     // dataGrid = 
                     // new Handsontable($("#dataGrid")[0], {
                     //     data: appData.datas,
@@ -234,50 +241,30 @@ function init(){
         onSqlClick:function(node){
             editor.setValue(node.sql ? node.sql:"");
             editor.focus();
-        },
-        onAddSql:function(node){
-            debugger;
-            ChromeAPI.saveLocalData("SQLListMap", appData.sqlList.sqlList);
-        },
-        onDeleteSql:function(node){
-            ChromeAPI.saveLocalData("SQLListMap", appData.sqlList.sqlList);
-        },
-        onRenameSql:function(node){
-            ChromeAPI.saveLocalData("SQLListMap", appData.sqlList.sqlList);
+            this.showTab("sql");
         },
         updateHistory:function(objectName){
             let sql = editor.getValue();
-            let newHistory = [];
-            newHistory.push({title:`${objectName}`, sql:sql});
-            let n = 0;
-            for(let hd of appData.sqlList.historyList.children){
-                if(hd.sql == sql){
-                    continue ;
-                }else{
-                    newHistory.push(hd);
-                }
-                n++;
-                if(n>100){
-                    break;
-                }
-            }
-
-            appData.sqlList.historyList.children = newHistory;
-
-            ChromeAPI.saveLocalData("HistorySQLListMap", appData.sqlList.historyList);
-            this.$refs.historyTree.loadTreeData(appData.sqlList.historyList);
-        },
-        onYResize:function(offset){
-            appData.size.editorHeight += offset;
-            setTimeout(()=>{
-                window.dispatchEvent(new Event('resize'));
-            },0);
+            var options = {year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric'};
+            
+            this.$refs.sqlPanel.addHistory(`${new Date().toLocaleDateString("ja-JP", options)}_${objectName}`, sql);
         },
         onXResize:function(offset){
             appData.size.sqlListWidth += offset;
             setTimeout(()=>{
                 window.dispatchEvent(new Event('resize'));
             });
+        },
+        onSaveSql:function(node){
+            node.model.sql = editor.getValue();
+        },
+        onTabClick:function(e){
+            this.showTab(e.target.getAttribute("tabId"));
+        },
+        showTab:function(tabId){
+            this.showTabId = tabId;
+            $(".tab.selected").removeClass("selected");
+            $(`.tab[tabId='${tabId}']`).addClass("selected");
         }
     }
   });
@@ -290,21 +277,7 @@ function loadData(){
     appData.objMap = objMapP;
     objMap = objMapP;
     
-    ChromeAPI.getLocalData("SQLListMap",function(sqlListMap){
-        if(!sqlListMap.SQLListMap){
-            sqlListMap.SQLListMap = {title:"sql"};
-            ChromeAPI.saveLocalData("SQLListMap", sqlListMap.SQLListMap);
-        }
-        appData.sqlList.sqlList = sqlListMap.SQLListMap;
-        ChromeAPI.getLocalData("HistorySQLListMap",function(historySQLListMap){
-            if(!historySQLListMap.HistorySQLListMap){
-                historySQLListMap.HistorySQLListMap = {title:"history", children:[]};
-                ChromeAPI.saveLocalData("HistorySQLListMap", historySQLListMap.HistorySQLListMap);
-            }
-            appData.sqlList.historyList = historySQLListMap.HistorySQLListMap;
-            init();
-        });
-    });
+    init();
   });
 }
 loadData();
@@ -340,7 +313,7 @@ function downloadCSV(colHeaders, datas){
 
     for(let row of csvDatas){
         //result.push("\"=\"\"" + row.join("\"\"\",\"=\"\"") + "\"\"\"")
-        result.push("\"" + row.join("\",\"") + "\"")
+        result.push("\"" + row.join("\",\"") + "\"");
     }
     let csvStr = result.join("\r\n");
 
@@ -394,11 +367,4 @@ var editorInit = function(){
 //  editor.on("focus", function(e) {
 //     $(e.target).closest("#sqlDiv").css("height","100%");
 //  });
-}
-
-function saveSqlToTree(node){
-    node.model.sql = editor.getValue();
-    ChromeAPI.saveLocalData("SQLListMap", appData.sqlList.sqlList, function(){
-        alert("save over.");
-    });
 }
