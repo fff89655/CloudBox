@@ -48,7 +48,7 @@ var v = new Vue({
 
             this.appData.searchResult = searchResult;
         },
-        onClearDataClick : function(){debugger;
+        onClearDataClick : function(){
             ChromeAPI.removeLocalData("objMap",function(){alert("clear over.")});
             //ChromeAPI.clearLocalData(function(){alert("clear over.")});
         }

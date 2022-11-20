@@ -351,7 +351,7 @@ var vue = new Vue({
     },
     onFilterChange(e){
         let v = e ? e.target.value : appData.filterTxt;
-        vs = v.split(/\W+/);
+        let vs = v.split(/\W+/);
         
         let all = [];
         all.push(...appData.selectItems);

@@ -9,6 +9,7 @@ var template = `
         <button @click="display('reference')">R</button>
         <button @click="display('all')">ALL</button>
         <label for="csutomChk">custom only:</label><input id="csutomChk" v-model="input.customChk" type="checkbox" @click="customCheck" />
+        <input type="text" @change="onFilterChange($event)" />
     </td>
 </tr>
 <tr>
@@ -67,7 +68,7 @@ Vue.component('obj-field-select', {
             }
             this.clearHighLight();
         },
-        display:function(type){debugger;
+        display:function(type){
             for(field of this.unSelectedFields){
                 if(type=="all"){
                     field.display = true;
@@ -82,6 +83,27 @@ Vue.component('obj-field-select', {
                 }
             }
             this.clearHighLight();
+        },
+        onFilterChange:function(e){
+            let vs = e.target.value.split(/\W+/);
+            
+            for(let keyWord of vs){
+                if(!keyWord) continue;
+                let reg = new RegExp(keyWord,"i");
+
+                let unSelectedFields = [];
+                let selectedFields = this.selectedFields;
+
+                for(field of this.unSelectedFields){
+                    if(reg.test(field.apiName)){
+                        selectedFields.push(field);
+                    }else{
+                        unSelectedFields.push(field);
+                    }
+                }
+                this.unSelectedFields = unSelectedFields;
+                this.selectedFields = selectedFields;
+            }
         },
         clearHighLight:function(){
             for(field of this.unSelectedFields){

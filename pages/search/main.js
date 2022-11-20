@@ -5,7 +5,8 @@ SalesforceAPI.LoginInfor = parentLoginInfor.LoginInfor;
 
 
 var appData = {datas:null, selectItems:[], input:{objName:null}, searchObj:null, objItems:[], selectObj:null, insertNum:0,
-               fieldSelect:{cmpName:null, show:false, fieldSelectProp:{object:null,selectedFieldNames:null,width:800,height:500}},
+               fieldSelect:{cmpName:null, show:false, nextAction:null,
+                    fieldSelectProp:{object:null,selectedFieldNames:null,width:800,height:500}},
                upsert:{show:false},
                matrix:{width:0, height:0},
                size:{sqlListWidth:300},
@@ -66,7 +67,7 @@ function init(){
             // }
             // saveToSalesforce(updateRecList);
         },
-        createSql:function(){
+        createSqlPop:function(){
 
             if(!this.selectObj){
                 alert("select object.");
@@ -79,15 +80,70 @@ function init(){
             this.fieldSelect.fieldSelectProp.object = appData.searchObj;
             this.fieldSelect.cmpName = null;
             setTimeout(() => {
+                this.fieldSelect.nextAction = 'createSql';
                 this.fieldSelect.cmpName = 'obj-field-select';
             }, 1000);
         },
-        fieldSelectOK:function(){
+        createSql:function(){
             let selectedFields = this.$refs.fieldSelect.getSelected();
 
             let sql = `SELECT\n  ${selectedFields.join(",\n  ")}\nFROM ${this.selectObj}`;
             editor.setValue(sql);
             editor.focus();
+        },
+        addRowPop:function(){
+            if(!this.selectObj || !this.insertNum){
+                alert("select object and input num.")
+                return;
+            }
+            this.fieldSelect.show = true;
+            $(".fieldSelect").css("left", $("#addRow").offset().left-200 + "px");
+            
+            appData.searchObj = objMap[this.selectObj];
+            this.fieldSelect.fieldSelectProp.object = appData.searchObj;
+            this.fieldSelect.cmpName = null;
+            
+            let obj = objMap[this.selectObj];
+
+            let fieldNameList = ["Id"];
+            for(let f of obj.fields){
+                if(f.custom == false
+                   && f.name != "Name"){
+                    continue;
+                }
+                if(f.mustInput){
+                    fieldNameList.push(f.name);
+                }
+            }
+            this.showTab("data");
+            setTimeout(() => {
+                this.fieldSelect.nextAction = 'addRow';
+                this.fieldSelect.cmpName = 'obj-field-select';
+                this.fieldSelect.fieldSelectProp.selectedFieldNames = fieldNameList.join(",");
+            }, 1000);
+        },
+        addRow:function(){
+            let selectedFields = this.$refs.fieldSelect.getSelected();
+            let rowNum = parseInt(this.insertNum);
+            
+            let addRows = [];
+            for(let i=0 ; i<rowNum ; i++){
+                let row = {};
+                for(let prop of selectedFields){
+                    row[prop] = null;
+                }
+                addRows.push(row);
+            }
+
+            let p = this.$refs.matrixParent;
+            this.$refs.matrix.showObjDataWidthResize(selectedFields, addRows, p.clientWidth, p.clientHeight);
+        },
+        fieldSelectOK:function(){
+            if(this.fieldSelect.nextAction == "createSql"){
+                this.createSql();
+            }else{
+                this.addRow();
+            }
             this.fieldSelect.show = false;
         },
         fieldSelectCANCLE:function(){
@@ -225,40 +281,6 @@ function init(){
                 await SalesforceAPI.requestDeleteDataSync(this.selectObj, row.Id);
             }
             alert("delete success.");
-        },
-        addRow:function(){
-            if(!this.selectObj || !this.insertNum){
-                alert("select object and input num.")
-                return;
-            }
-
-            let obj = objMap[this.selectObj];
-
-            let fieldNameList = ["Id"];
-            for(let f of obj.fields){
-                if(f.custom == false
-                   && f.name != "Name"){
-                    continue;
-                }
-                if(f.mustInput){
-                    fieldNameList.push(f.name);
-                }
-            }
-            let rowNum = parseInt(this.insertNum);
-            
-            let addRows = [];
-            for(let i=0 ; i<rowNum ; i++){
-                let row = {};
-                for(let prop of fieldNameList){
-                    row[prop] = null;
-                }
-                addRows.push(row);
-            }
-
-            this.showTab("data");
-
-            let p = this.$refs.matrixParent;
-            this.$refs.matrix.showObjDataWidthResize(fieldNameList, addRows, p.clientWidth, p.clientHeight);
         },
         onSqlClick:function(node){
             editor.setValue(node.sql ? node.sql:"");

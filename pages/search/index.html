@@ -51,7 +51,7 @@
             <div class="mask" :class="{hide:!(fieldSelect.show || upsert.show)}"></div>
             <div class="fieldSelect" :class="fieldSelect.show?'':'hide'">
                 <div class="btns">
-                    <button @click="fieldSelectOK">search</button>
+                    <button @click="fieldSelectOK">ok</button>
                     <button @click="fieldSelectCANCLE">cancle</button>
                 </div>
                 <div style="padding-top: 6px;">
@@ -77,9 +77,9 @@
                                     <button v-on:click="search">search</button>
                                     <button v-on:click="save">save</button>
                                     <button v-on:click="showAsLabel">label</button>
-                                    <button id="createSql" v-on:click="createSql">createSql</button>
+                                    <button id="createSql" v-on:click="createSqlPop">createSql</button>
                                     <button v-on:click="deleteRow">deleteRow</button>
-                                    <button v-on:click="addRow">addRow</button>
+                                    <button id="addRow" v-on:click="addRowPop">addRow</button>
                                     <div style="display:inline-block;">
                                         <combobox v-bind:items="objItems" v-model="selectObj"></combobox>
                                         <input type="text" style="width:50px" v-model="insertNum"  />
