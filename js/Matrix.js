@@ -27,7 +27,7 @@ class DisplayObject extends EventDispatcher {
     }
     draw() { }
 }
-class InteractiveObject extends EventDispatcher {
+class InteractiveObject extends DisplayObject {
     constructor() {
         super();
         this.doubleClickEnabled = false;
@@ -289,7 +289,7 @@ class Cmp {
             child.fireEvent(eventName, param);
         }
     }
-    onMouseDown(p, shift, ctrl) {
+    onMouseDown(p, shift, ctrl, middelButton) {
     }
     fireMouseDown(p, shift, ctrl, middelButton) {
         if (this.config.enableMouseDown != true)
@@ -559,6 +559,9 @@ class Matrix extends Cmp {
         this.firePaint(this.ctx);
         this.scrollTop = 0;
         this.scrollLeft = 0;
+    }
+    getSelectedRows() {
+        return this.centerData.getSelectedRowObjs();
     }
     getEditedRowObjs() {
         return this.centerData.getEditedRowObjs();
@@ -1165,10 +1168,10 @@ class MatrixCenterData extends Cmp {
         cell.setVal(val, this.matrix);
         this.editedCells.push(cell);
     }
-    getEditedRowObjs() {
+    getRowsByCells(cells) {
         let result = [];
         let editdRowIndex = new Set();
-        for (let cell of this.editedCells) {
+        for (let cell of cells) {
             editdRowIndex.add(cell.rowIndex);
         }
         let idColIndex = null;
@@ -1197,6 +1200,12 @@ class MatrixCenterData extends Cmp {
             result.push(rec);
         }
         return result;
+    }
+    getSelectedRowObjs() {
+        return this.getRowsByCells(this.selectedCells);
+    }
+    getEditedRowObjs() {
+        return this.getRowsByCells(this.editedCells);
     }
     clearEdit() {
         for (let editedCell of this.editedCells) {

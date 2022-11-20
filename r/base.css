@@ -55,11 +55,12 @@ input[type=text]{
     border-bottom: none;
     cursor:pointer;
     text-align: center;
-    background-color: #e8f7ff;
+    background-color: #e2e6e8;
 }
 .tab.selected{
     background-color: white;
     border-bottom: 1px solid #d0eefe;
+    font-weight: 900;
 }
 .tabBody{
     border:1px solid #0075f5;

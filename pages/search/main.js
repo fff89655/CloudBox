@@ -4,8 +4,8 @@ SalesforceAPI.LoginInfors = parentLoginInfor.LoginInfors;
 SalesforceAPI.LoginInfor = parentLoginInfor.LoginInfor;
 
 
-var appData = {datas:null, selectItems:[], input:{objName:null}, searchObj:null, objItems:[],
-               fieldSelect:{cmpName:null, show:false, fieldSelectProp:{object:null,selectedFieldNames:null,width:800,height:500},},
+var appData = {datas:null, selectItems:[], input:{objName:null}, searchObj:null, objItems:[], selectObj:null, insertNum:0,
+               fieldSelect:{cmpName:null, show:false, fieldSelectProp:{object:null,selectedFieldNames:null,width:800,height:500}},
                upsert:{show:false},
                matrix:{width:0, height:0},
                size:{sqlListWidth:300},
@@ -26,10 +26,6 @@ function init(){
           this.searchDatas("table");
         },
         save: async function(){
-            if(!window.dataObjName){
-                alert("no search data.");
-                return;
-            }
             let editedRows = this.$refs.matrix.getEditedRowObjs();
             if(editedRows.length == 0){
                 alert("no edit data.");
@@ -39,7 +35,7 @@ function init(){
                 alert("No Id Column.");
                 return;
             }
-            let obj = objMap[window.dataObjName];
+            let obj = objMap[appData.selectObj ];
             for(let row of editedRows){
                 for(let pro in row){
                     if(obj.fieldMap[pro].type == "datetime"){
@@ -70,32 +66,26 @@ function init(){
             // }
             // saveToSalesforce(updateRecList);
         },
-        objSelect:function(val){
-            let input = val;
-
-            for (const objApiName in appData.objMap) {
-                if(input == objApiName){                    
-                    appData.input.objName = input;
-                    appData.searchObj = objMap[input];
-
-                    this.fieldSelect.fieldSelectProp.object = appData.searchObj;
-                    this.fieldSelect.cmpName = null;
-                    setTimeout(() => {
-                        this.fieldSelect.cmpName = 'obj-field-select';
-                    }, 1000);
-
-                    break;
-                }
-            }
-        },
         createSql:function(){
+
+            if(!this.selectObj){
+                alert("select object.");
+                return;
+            }
             this.fieldSelect.show = true;
             $(".fieldSelect").css("left", $("#createSql").offset().left + "px");
+            
+            appData.searchObj = objMap[this.selectObj];
+            this.fieldSelect.fieldSelectProp.object = appData.searchObj;
+            this.fieldSelect.cmpName = null;
+            setTimeout(() => {
+                this.fieldSelect.cmpName = 'obj-field-select';
+            }, 1000);
         },
         fieldSelectOK:function(){
             let selectedFields = this.$refs.fieldSelect.getSelected();
 
-            let sql = `SELECT\n  ${selectedFields.join(",\n  ")}\nFROM ${appData.input.objName}`;
+            let sql = `SELECT\n  ${selectedFields.join(",\n  ")}\nFROM ${this.selectObj}`;
             editor.setValue(sql);
             editor.focus();
             this.fieldSelect.show = false;
@@ -179,7 +169,7 @@ function init(){
                     }else{
                         me.$refs.matrix.clear();
                     }
-                    window.dataObjName = objectName;
+                    appData.selectObj = objectName;
 
                     me.updateHistory(objectName);
 
@@ -220,23 +210,55 @@ function init(){
             });
         
         },
-        addRow:function(){
-            if(!appData.datas) return;
-            
-            let p = this.$refs.matrixParent;
-                    
-            let rowNum = parseInt(prompt("input row num."));
+        deleteRow: async function(){
+            if(!this.selectObj){
+                alert("select object.");
+                return;
+            }
 
+            let rows = this.$refs.matrix.getSelectedCellRows();
+            for(let row of rows){
+                if(!row.Id){
+                    alert("no Id.");
+                    return;
+                }
+                await SalesforceAPI.requestDeleteDataSync(this.selectObj, row.Id);
+            }
+            alert("delete success.");
+        },
+        addRow:function(){
+            if(!this.selectObj || !this.insertNum){
+                alert("select object and input num.")
+                return;
+            }
+
+            let obj = objMap[this.selectObj];
+
+            let fieldNameList = ["Id"];
+            for(let f of obj.fields){
+                if(f.custom == false
+                   && f.name != "Name"){
+                    continue;
+                }
+                if(f.mustInput){
+                    fieldNameList.push(f.name);
+                }
+            }
+            let rowNum = parseInt(this.insertNum);
+            
             let addRows = [];
             for(let i=0 ; i<rowNum ; i++){
                 let row = {};
-                for(let prop of this.selectItems){
+                for(let prop of fieldNameList){
                     row[prop] = null;
                 }
                 addRows.push(row);
             }
 
-            this.$refs.matrix.showObjDataWidthResize(this.selectItems, addRows, p.clientWidth, p.clientHeight);
+            this.showTab("data");
+
+            let p = this.$refs.matrixParent;
+            this.$refs.matrix.showObjDataWidthResize(fieldNameList, addRows, p.clientWidth, p.clientHeight);
         },
         onSqlClick:function(node){
             editor.setValue(node.sql ? node.sql:"");
@@ -334,12 +356,12 @@ async function saveToSalesforce(updateRecList){
         if(updateRec.Id){
             let Id = updateRec.Id;
             delete updateRec.Id;
-            let result = await SalesforceAPI.requestSaveDataSync(window.dataObjName, Id, JSON.stringify(updateRec));
+            let result = await SalesforceAPI.requestSaveDataSync(appData.selectObj, Id, JSON.stringify(updateRec));
             if(result != "success"){
                 errMsg.push(result);
             }
         }else{
-            let result = await SalesforceAPI.requestCreateDataSync(window.dataObjName, JSON.stringify(updateRec));
+            let result = await SalesforceAPI.requestCreateDataSync(appData.selectObj, JSON.stringify(updateRec));
             if(result != "success"){
                 errMsg.push(result);
             }

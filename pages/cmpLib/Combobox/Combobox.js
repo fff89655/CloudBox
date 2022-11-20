@@ -1,6 +1,6 @@
 var template = `
 <div class="combobox" style="display:inline-block">
-    <input type="text" ref="input"
+    <input type="text" ref="input" v-model="value"
       @input="onInput" @keydown="onKeyDown($event)" @focus="onFocus" @focusout="onFocusout"/>
     <img class="pulldownicon" src="/imgs/pulldown.svg" @click="iconClick" />
     <div class="dropdownDiv" v-show="showDropdown">
@@ -51,10 +51,9 @@ Vue.component('combobox', {
             }
             this.itemDatas = itemDatas;
         },
-        onInput:function(){console.log(this.value);
-            let value = this.$refs.input.value;
-            if(value){
-                let reg = new RegExp(value,"i");
+        onInput:function(){
+            if(this.value){
+                let reg = new RegExp(this.value,"i");
                 for(let item of this.itemDatas){
                     if(reg.test(item.value)){
                         item.show = true;
@@ -66,7 +65,6 @@ Vue.component('combobox', {
                         }
                     }
                 }
-                this.val = value;
             }
         },
         onFocus:function(){
@@ -129,11 +127,9 @@ Vue.component('combobox', {
             this.showDropdown = false;
         },
         setValue:function(val){
-            this.val = val;
-            this.$refs.input.value = this.val;
             this.value = val;
-            this.$emit('input', val);
-            this.$emit('onchange', val);
+            this.$emit('input', this.value);
+            this.$emit('onchange', this.value);
         },
         showItems:function(){
             this.computeHeaderWidth();

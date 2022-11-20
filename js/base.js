@@ -703,6 +703,27 @@ var SalesforceAPI = (function () {
             xhr.send(data);
         });
     }
+    
+    api.requestDeleteDataSync = function (objectName, Id) {
+        return new Promise((resolve) => {
+            var xhr = new XMLHttpRequest();
+
+            xhr.open("DELETE", api.LoginInfor.domain +`services/data/v46.0/composite/sobjects?ids=${Id}`, true);
+            // xhr.open("DELETE", api.LoginInfor.domain +`services/data/v46.0/sobjects/${objectName}/${Id} -X DELETE`, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("X-PrettyPrint", "1");
+            xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfor.sessionId);
+    
+            xhr.onload = function () {
+                if (xhr.status == 200) {
+                    resolve('success'); 
+                } else {
+                    resolve('error:' + xhr.responseText); 
+                }
+            }
+            xhr.send();
+        });
+    }
 
     api.requestRESTApi = function (url, callBack, errorCallBack) {
 

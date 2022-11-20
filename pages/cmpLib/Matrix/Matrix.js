@@ -51,6 +51,9 @@ Vue.component('matrix', {
         },
         clear: function(){
             this.matrix.clear();
+        },
+        getSelectedCellRows: function(){
+            return this.matrix.getSelectedRows();
         }
     }
 })
