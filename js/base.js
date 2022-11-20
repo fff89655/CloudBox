@@ -583,6 +583,8 @@ var SalesforceAPI = (function () {
         var xhr = new XMLHttpRequest();
         xhr.open("GET", api.LoginInfor.domain +"services/data/v46.0/tooling/query?q=" + soql.replace(" " + "+"), true);
         
+        xhr.setRequestHeader("pragma", "no-cache");
+        xhr.setRequestHeader("cache-control", "no-cache");
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.setRequestHeader("X-PrettyPrint", "1");
         xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfor.sessionId);
@@ -632,6 +634,9 @@ var SalesforceAPI = (function () {
     api.requestRecord = function (objName, id, fields, callBack, errorCallBack) {
         var xhr = new XMLHttpRequest();
         xhr.open("GET", api.LoginInfor.domain + `services/data/v46.0/sobjects/${objName}/${id}?fields=${fields.join(',')}`, true);
+        
+        xhr.setRequestHeader("pragma", "no-cache");
+        xhr.setRequestHeader("cache-control", "no-cache");
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.setRequestHeader("X-PrettyPrint", "1");
         xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfor.sessionId);
@@ -652,6 +657,8 @@ var SalesforceAPI = (function () {
         var xhr = new XMLHttpRequest();
         let sql = encodeURI(soql.replace(/\s+/gs , "+"));
         xhr.open("GET", api.LoginInfor.domain + "services/data/v46.0/query?q=" + sql, true);
+        xhr.setRequestHeader("pragma", "no-cache");
+        xhr.setRequestHeader("cache-control", "no-cache");
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.setRequestHeader("X-PrettyPrint", "1");
         xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfor.sessionId);
@@ -671,6 +678,8 @@ var SalesforceAPI = (function () {
     api.requestCreateData = function(objectName, data, callBack, errorCallBack) {
         var xhr = new XMLHttpRequest();
         xhr.open("POST", api.LoginInfor.domain +`services/data/v46.0/sobjects/${objectName}`, true);
+        xhr.setRequestHeader("pragma", "no-cache");
+        xhr.setRequestHeader("cache-control", "no-cache");
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.setRequestHeader("X-PrettyPrint", "1");
         xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfor.sessionId);
@@ -689,6 +698,9 @@ var SalesforceAPI = (function () {
         return new Promise((resolve) => {
             var xhr = new XMLHttpRequest();
             xhr.open("POST", api.LoginInfor.domain +`services/data/v46.0/sobjects/${objectName}`, true);
+            
+            xhr.setRequestHeader("pragma", "no-cache");
+            xhr.setRequestHeader("cache-control", "no-cache");
             xhr.setRequestHeader("Content-Type", "application/json");
             xhr.setRequestHeader("X-PrettyPrint", "1");
             xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfor.sessionId);
@@ -710,6 +722,8 @@ var SalesforceAPI = (function () {
 
             xhr.open("DELETE", api.LoginInfor.domain +`services/data/v46.0/composite/sobjects?ids=${Id}`, true);
             // xhr.open("DELETE", api.LoginInfor.domain +`services/data/v46.0/sobjects/${objectName}/${Id} -X DELETE`, true);
+            xhr.setRequestHeader("pragma", "no-cache");
+            xhr.setRequestHeader("cache-control", "no-cache");
             xhr.setRequestHeader("Content-Type", "application/json");
             xhr.setRequestHeader("X-PrettyPrint", "1");
             xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfor.sessionId);
@@ -729,6 +743,8 @@ var SalesforceAPI = (function () {
 
         var xhr = new XMLHttpRequest();
         xhr.open("GET", api.LoginInfor.domain + url, true);
+        xhr.setRequestHeader("pragma", "no-cache");
+        xhr.setRequestHeader("cache-control", "no-cache");
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.setRequestHeader("X-PrettyPrint", "1");
         xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfor.sessionId);
@@ -748,6 +764,8 @@ var SalesforceAPI = (function () {
     api.requestSaveData = function (objectName, objectId, data, callBack, errorCallBack) {
         var xhr = new XMLHttpRequest();
         xhr.open("PATCH", `${api.LoginInfor.domain}services/data/v46.0/sobjects/${objectName}/${objectId}`, true);
+        xhr.setRequestHeader("pragma", "no-cache");
+        xhr.setRequestHeader("cache-control", "no-cache");
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.setRequestHeader("X-PrettyPrint", "1");
         xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfor.sessionId);
@@ -768,6 +786,8 @@ var SalesforceAPI = (function () {
         return new Promise((resolve) => {
             var xhr = new XMLHttpRequest();
             xhr.open("PATCH", `${api.LoginInfor.domain}services/data/v46.0/sobjects/${objectName}/${objectId}`, true);
+            xhr.setRequestHeader("pragma", "no-cache");
+            xhr.setRequestHeader("cache-control", "no-cache");
             xhr.setRequestHeader("Content-Type", "application/json");
             xhr.setRequestHeader("X-PrettyPrint", "1");
             xhr.setRequestHeader("Authorization", "Bearer " + api.LoginInfor.sessionId);

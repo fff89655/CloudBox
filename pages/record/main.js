@@ -59,7 +59,8 @@ var appData = { idVal: "",
                 errMsg:null,
                 successMessage:null,
                 reference:[],
-                objItems:[]};
+                objItems:[],
+                filterTxt:null};
 
 var vue = new Vue({
   el: '#app',
@@ -86,7 +87,7 @@ var vue = new Vue({
 
         me._setRelationItem(obj, appData.recordData);
 
-        console.log(r);
+        me.onFilterChange();
       });
 
     },
@@ -130,7 +131,7 @@ var vue = new Vue({
               appData.errMsg = null;
 
               appData.idVal = appData.recordData.Id;
-              this.onSearchClick();
+            //   this.onSearchClick();
             },function(r){
               console.log(r);
               appData.errMsg = JSON.stringify(r) ;
@@ -150,7 +151,7 @@ var vue = new Vue({
                 appData.errMsg = null;
                 
                 appData.idVal = r.id;
-                this.onSearchClick();
+                // this.onSearchClick();
             },function(r){
                 console.log(r);
                 appData.errMsg = JSON.stringify(r) ;
@@ -264,7 +265,7 @@ var vue = new Vue({
             appData.errMsg = null;
             
             appData.idVal = r.id;
-            this.onSearchClick();
+            // this.onSearchClick();
             
         },function(r){
             console.log(r);
@@ -343,7 +344,7 @@ var vue = new Vue({
         }
     },
     onFilterChange(e){
-        let v = e.target.value;
+        let v = e ? e.target.value : appData.filterTxt;
         vs = v.split(/\W+/);
         
         let all = [];

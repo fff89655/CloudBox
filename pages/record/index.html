@@ -69,7 +69,7 @@
                 <check-group :items="['not null']" @onchange="onNotNullChange"></check-group>
             </div>
             <div style="float:left;margin-left:20px;">
-                <input type="text" @change="onFilterChange($event)"></input>
+                <input type="text" v-model="appData.filterTxt" @change="onFilterChange($event)"></input>
             </div>
         </div>
         <div class="btns w3-right">
