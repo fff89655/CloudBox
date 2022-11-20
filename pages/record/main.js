@@ -121,7 +121,13 @@ var vue = new Vue({
         Object.keys(appData.editItemName).forEach(k => {
             updateObj[k] = appData.recordData[k];
         });
-        console.log(updateObj);
+        
+        for(let prop in updateObj){
+            if(updateObj[prop] === ""){
+                updateObj[prop] = null;
+            }
+        }
+
         if(appData.recordData.Id){
             SalesforceAPI.requestSaveData(appData.objectName, appData.recordData.Id, JSON.stringify(updateObj) ,function(){
               appData.successMessage = "保存が成功しました。";

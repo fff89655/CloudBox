@@ -353,6 +353,12 @@ function downloadCSV(colHeaders, datas){
 async function saveToSalesforce(updateRecList){
     let errMsg = [];
     for(let updateRec of updateRecList){
+        for(let prop in updateRec){
+            if(updateRec[prop] === ""){
+                updateRec[prop] = null;
+            }
+        }
+
         if(updateRec.Id){
             let Id = updateRec.Id;
             delete updateRec.Id;
