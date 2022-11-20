@@ -344,16 +344,23 @@ var vue = new Vue({
     },
     onFilterChange(e){
         let v = e.target.value;
-        let reg = new RegExp(v,"i");
+        vs = v.split(/\W+/);
+        
         let all = [];
         all.push(...appData.selectItems);
         all.push(...appData.selectStandardItems);
         all.push(...appData.selectReadOnlyItems);
         for(let item of all){
-            if(reg.test(item.field.name)){
-                item.show = true;
-            }else{
-                item.show = false;
+            item.show = false;
+        }
+        for(let keyWord of vs){
+            if(!keyWord) continue;
+            let reg = new RegExp(keyWord,"i");
+
+            for(let item of all){
+                if(reg.test(item.field.name)){
+                    item.show = true;
+                }
             }
         }
     }
