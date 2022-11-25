@@ -503,6 +503,12 @@ class Matrix extends Cmp {
             me.el.focus();
             me.scrollTo(me.scrollTop - e.wheelDeltaY, me.scrollLeft - e.wheelDeltaX);
         });
+        this.el.addEventListener("contextmenu", (e) => {
+            if (me.onMenuDown) {
+                me.onMenuDown(e);
+            }
+            e.preventDefault();
+        });
         document.body.addEventListener("paste", (e) => {
             me.fireEvent("paste", e);
         });
@@ -559,6 +565,9 @@ class Matrix extends Cmp {
         this.firePaint(this.ctx);
         this.scrollTop = 0;
         this.scrollLeft = 0;
+    }
+    addMenuDownListener(fun) {
+        this.onMenuDown = fun;
     }
     getSelectedRows() {
         return this.centerData.getSelectedRowObjs();

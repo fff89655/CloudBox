@@ -90,6 +90,8 @@ function init(){
             let sql = `SELECT\n  ${selectedFields.join(",\n  ")}\nFROM ${this.selectObj}`;
             editor.setValue(sql);
             editor.focus();
+            
+            this.showTab("sql");
         },
         addRowPop:function(){
             if(!this.selectObj || !this.insertNum){
@@ -273,6 +275,12 @@ function init(){
             }
 
             let rows = this.$refs.matrix.getSelectedCellRows();
+
+            if(!rows || row.length == 0){
+                alert("select delete row.");
+                return;
+            }
+
             for(let row of rows){
                 if(!row.Id){
                     alert("no Id.");

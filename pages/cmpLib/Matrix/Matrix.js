@@ -23,6 +23,7 @@ Vue.component('matrix', {
     },
     mounted: function(){
         this.matrix = new Matrix(this.$refs.canvas);
+        this.matrix.addMenuDownListener(this.onMenuDown);
         if(this.headers && this.datas){
             this.matrix.showData(this.headers, this.datas);
         }
@@ -42,6 +43,7 @@ Vue.component('matrix', {
             this.headers = headers;
             this.datas = datas;
             this.matrix.showData(this.headers, this.datas);
+            this.matrix.addMenuDownListener(this.onMenuDown);
         },
         getEditedRowObjs: function(){
             return this.matrix.getEditedRowObjs();
@@ -54,6 +56,9 @@ Vue.component('matrix', {
         },
         getSelectedCellRows: function(){
             return this.matrix.getSelectedRows();
+        },
+        onMenuDown: function(e){
+            debugger;
         }
     }
 })
